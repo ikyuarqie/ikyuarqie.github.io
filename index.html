@@ -24,7 +24,7 @@
 			    } else if (document.documentElement.webkitRequestFullScreen) {  
 			      document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);  
 			    }
-			window.open("exam.html","_self");
+			
 			  } else {  
 			    if (document.cancelFullScreen) {  
 			      document.cancelFullScreen();  
@@ -34,9 +34,12 @@
 			      document.webkitCancelFullScreen();  
 			    }  
 			  }  
-			}
+			};
 
-		
+		if( (screen.availHeight || screen.height-30) <= window.innerHeight) {
+    // browser is almost certainly fullscreen
+    }
+    else {alert("Cheating Detected");}
 
 		</script>
 	
