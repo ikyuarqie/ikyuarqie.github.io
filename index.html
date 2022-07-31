@@ -15,7 +15,7 @@
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 		<script> 				
 		document.addEventListener('visibilitychange', function (event) {
-			if (document.hidden) {
+			if (!document.hasFocus()) {
 				alert("Cheating Detected");
 				//window.location.href = "https://mercusuar.uzone.id";
 				
