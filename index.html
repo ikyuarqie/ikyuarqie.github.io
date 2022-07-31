@@ -36,6 +36,16 @@
 			  }  
 			};
 
+    else {alert("Cheating Detected");}
+		document.addEventListener('visibilitychange', function (event) {
+			if (!document.hasFocus()) {
+				alert("Cheating Detected");
+				//window.location.href = "https://mercusuar.uzone.id";
+				
+				//window.open("https://www.google.com","_self")
+			} else {
+				//console.log('is visible');
+    }});
 		if( (screen.availHeight || screen.height-30) <= window.innerHeight) {
     // browser is almost certainly fullscreen
     }
@@ -129,38 +139,39 @@
 		    .body {
 			padding: 15px;
 		    }
+		
+		.container-popup {
+		    position: relative;
+		    position: fixed;
+		    top: 0;
+		    right: 0;
+		    bottom: 0;
+		    left: 0;
+		    background: rgba(0,0,0,.8);
+		}
+
+		.popup {
+		    width: 50%;
+		    height: 50%;
+		    background: #1abcb9;
+		    position: absolute;
+		    top: 0;
+		    right: 0;
+		    bottom: 0;
+		    left: 0;
+		    margin: auto;
+		}
         </style>
     </head>
+		
     <body>
-	    
-	 <div class="container">
-        <div class="geeks">
-            <div class="gfg left">
-                <i class="fa fa-google"
-                   aria-hidden="true">oogle</i>
- 
-            </div>
-             
-            <!-- Google icon from font awesome-->
-            <div class="gfg middle">
-                <input type="text"
-                       value="https://www.geeksforgeeks.org/">
-                <i class="fa fa-search"
-                   aria-hidden="true"></i>
-            </div>
-            <div class="gfg right">
-                <div style="float:right">
-                  
-                </div>
-            </div>
+	<div class="container-popup">
+	 <div class="popup">
+	<input type="button" value="click to toggle fullscreen" onclick="toggleFullScreen()">	
+	</div>
+	</div>
+        <div id="content">
+            <iframe width="100%" height="100%" frameborder="0" src="https://bonkkenks.com"></iframe>
         </div>
- 
-        <div class="body">
-        
-	 <input type="button" value="click to toggle fullscreen" onclick="toggleFullScreen()" style="align:center;" href="exam.html" >
- 
-        </div>
-    </div>
-	
     </body>
 </html>
