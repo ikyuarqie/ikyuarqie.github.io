@@ -25,16 +25,12 @@
 			      document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);  
 			    }
 			
-			  } else {  
-			    if (document.cancelFullScreen) {  
-			      document.cancelFullScreen();  
-			    } else if (document.mozCancelFullScreen) {  
-			      document.mozCancelFullScreen();  
-			    } else if (document.webkitCancelFullScreen) {  
-			      document.webkitCancelFullScreen();  
-			    }  
-			  }  
+			const popup = document.getElementById('popup');
+			popup.style.display = 'none';
+			  } 
 			};
+			
+			
 
 		document.addEventListener('visibilitychange', function (event) {
 			if (!document.hasFocus()) {
@@ -164,7 +160,7 @@
     </head>
 		
     <body>
-	<div class="container-popup">
+	<div id="popup" class="container-popup">
 	 <div class="popup">
 	<input type="button" value="click to toggle fullscreen" onclick="toggleFullScreen()">	
 	</div>
