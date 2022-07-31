@@ -42,7 +42,12 @@
 				//window.location.href = "https://mercusuar.uzone.id";
 				
 				//window.open("https://www.google.com","_self")
-			} else {
+			} 
+			else if ((!document.fullScreenElement && !document.fullScreenElement !== null) ||    
+			   (document.mozFullScreen && document.webkitIsFullScreen)))
+			{alert("Cheating Detected");
+			}
+			else {
 				//console.log('is visible');
     }}});
 		
