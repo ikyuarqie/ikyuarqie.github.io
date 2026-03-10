@@ -5643,7 +5643,8 @@
         {
             "id": "groom",
             "title": "Groom",
-            "body": ""
+            "body": "",
+            "image": "pages/groom.jpg"
         },
         {
             "id": "brides",
