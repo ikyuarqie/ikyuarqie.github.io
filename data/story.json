@@ -5649,23 +5649,25 @@
             "id": "brides",
             "title": "Bride",
             "body": "",
-            "image": "Pages/Bride.jpg"
+            "image": "pages/bride.jpg"
         },
         {
             "id": "title",
             "title": "Title",
             "body": "",
-            "image": "pages/Title.jpg"
+            "image": "pages/title.jpg"
         },
         {
             "id": "puyo",
             "title": "Puyo",
-            "body": ""
+            "body": "",
+            "image": "pages/puyo.jpg"
         },
         {
             "id": "leona",
             "title": "Leona",
-            "body": ""
+            "body": "",
+            "image": "pages/leona.jpg"
         }
     ],
     "savedAt": "2026-03-10T06:39:50+01:00"
