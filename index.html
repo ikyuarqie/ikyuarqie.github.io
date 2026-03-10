@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>The Wedding of Laras & Ikyu</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preload" href="pages/page1.jpg" as="image">
+</head>
+<body>
+  <!-- Intro: title + enter button -->
+  <section id="intro" class="screen active">
+    <h1 class="intro-title">The Wedding of</h1>
+    <p class="intro-names">Laras & Ikyu</p>
+    <button type="button" id="btn-enter" class="btn-enter">Enter</button>
+  </section>
+
+  <!-- Main: fullscreen image, floating buttons -->
+  <section id="main" class="screen">
+    <div class="main-content">
+      <div class="image-wrap">
+        <img id="page-image" src="pages/page1.jpg" alt="Wedding illustration" loading="eager" />
+        <div id="hotspot-layer" class="hotspot-layer" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="main-actions" aria-label="Actions">
+      <button type="button" id="btn-map" class="btn-action" aria-label="Show map" title="Show map">🗺️</button>
+      <button type="button" id="btn-flashlight" class="btn-flashlight btn-action" aria-label="Show clickable areas" title="Show clickable areas">💡</button>
+    </div>
+  </section>
+
+  <!-- Map popup: outside #main so fixed positioning works on mobile -->
+  <div id="map-popup" class="map-popup" aria-hidden="true">
+    <button type="button" id="btn-close-map" class="map-popup-close" aria-label="Close map">×</button>
+    <div class="map-popup-inner">
+      <img src="pages/maps.png" alt="Map" class="map-popup-img" />
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

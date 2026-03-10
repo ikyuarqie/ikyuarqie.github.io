@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Wedding Story</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/polybooljs@1.2.0/dist/polybool.min.js"></script>
+</head>
+<body>
+  <div class="admin">
+    <header class="admin-header">
+      <h1>Admin – Wedding Story</h1>
+      <div class="header-actions">
+        <button type="button" id="btn-toggle-settings" class="btn-toggle-settings" aria-label="Toggle Hotspots &amp; pages panel" title="Hotspots &amp; pages">⚙ Settings</button>
+        <a href="../index.html" class="link-story">View story</a>
+      </div>
+    </header>
+
+    <div class="admin-body">
+      <div class="editor-pane">
+        <div class="image-box" id="image-box">
+          <img id="admin-image" src="../pages/page1.jpg" alt="Story image" />
+          <div id="admin-overlay" class="admin-overlay">
+            <div id="draw-preview" class="draw-preview" aria-hidden="true">
+              <svg class="draw-preview-svg" xmlns="http://www.w3.org/2000/svg"><polygon class="draw-preview-path" /></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-pane" id="data-pane">
+        <div class="toolbar">
+          <button type="button" id="btn-add-hotspot" class="btn-tool">Add hotspot</button>
+          <button type="button" id="btn-confirm-shapes" class="btn-tool hidden">Done</button>
+          <button type="button" id="btn-cancel-shapes" class="btn-tool hidden">Cancel</button>
+          <span id="shape-count" class="shape-count hidden" aria-live="polite"></span>
+          <span id="draw-hint" class="hint hidden">Draw a shape. Draw again to add more, then click Done to create one hotspot.</span>
+        </div>
+        <section class="panel">
+          <h2>Hotspots</h2>
+          <ul id="hotspot-list" class="item-list"></ul>
+        </section>
+        <section class="panel">
+          <h2>Pages</h2>
+          <ul id="page-list" class="item-list"></ul>
+          <button type="button" id="btn-add-page" class="btn-add">+ Add page</button>
+        </section>
+        <div class="save-row">
+          <button type="button" id="btn-save" class="btn-save">Save to story</button>
+          <span id="save-status" class="save-status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form for new/edit hotspot -->
+    <dialog id="hotspot-dialog" class="dialog">
+      <form id="hotspot-form" method="dialog">
+        <h3 id="hotspot-dialog-title">New hotspot</h3>
+        <input type="hidden" id="hotspot-edit-index" value="-1" />
+        <label>Label <input type="text" id="hotspot-label" required placeholder="e.g. The Groom" /></label>
+        <label>Page
+          <select id="hotspot-page">
+            <option value="">— Select page —</option>
+          </select>
+        </label>
+        <div class="dialog-actions">
+          <button type="submit">Save</button>
+          <button type="button" id="hotspot-cancel">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Form for new/edit page -->
+    <dialog id="page-dialog" class="dialog">
+      <form id="page-form" method="dialog">
+        <h3 id="page-dialog-title">New page</h3>
+        <input type="hidden" id="page-edit-id" value="" />
+        <label>Title <input type="text" id="page-title" required placeholder="e.g. The Groom" /></label>
+        <label>Image (optional) <input type="text" id="page-image-path" placeholder="e.g. pages/groom.jpg" /></label>
+        <label>Body (optional) <textarea id="page-body" rows="3" placeholder="Short text for this page…"></textarea></label>
+        <div class="dialog-actions">
+          <button type="submit">Save</button>
+          <button type="button" id="page-cancel">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+  <script src="admin.js"></script>
+</body>
+</html>
