@@ -41,6 +41,33 @@
     if (a && INVITE.mapsUrl) a.href = INVITE.mapsUrl;
   }
 
+  function initRandomSlideBackgrounds() {
+    var nonHeroSlides = document.querySelectorAll(".swiper-slide:not(.swiper-slide--hero)");
+    if (!nonHeroSlides || !nonHeroSlides.length) return;
+
+    var pools = [
+      "pages/Background.jpg",
+      "pages/Background1.jpg",
+      "pages/Background2.jpg",
+      "pages/Background3.jpg",
+      "pages/Background4.jpg",
+      "pages/Background5.jpg"
+    ];
+
+    // Shuffle once so each slide gets a distinct background per refresh.
+    for (var j = pools.length - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var temp = pools[j];
+      pools[j] = pools[k];
+      pools[k] = temp;
+    }
+
+    for (var i = 0; i < nonHeroSlides.length; i++) {
+      var pick = pools[i % pools.length];
+      nonHeroSlides[i].style.backgroundImage = 'url("' + pick + '")';
+    }
+  }
+
   function initBgm() {
     var audio = document.getElementById("bgm-audio");
     var btn = document.getElementById("bgm-toggle");
@@ -249,6 +276,7 @@
   }
 
   function init() {
+    initRandomSlideBackgrounds();
     initGuestName();
     initEventText();
     initMapsLink();
