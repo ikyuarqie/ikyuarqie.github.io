@@ -5,7 +5,7 @@
 (function () {
   var INVITE = {
     eventStartISO: "2026-06-27T07:00:00",
-    eventDisplayText: "Sabtu, 27 Juni 2026\nAkad Nikah: Pukul 07.00 WIB\nResepsi Pernikahan: Pukut 10.00 - 13.00 WIB",
+    eventDisplayText: "Sabtu, 27 Juni 2026\nAkad Nikah: Pukul 07.00 WIB\nResepsi Pernikahan: Pukul 10.00 - 13.00 WIB",
     mapsUrl: "https://maps.app.goo.gl/a1tnFZWcpCmaieE39",
     defaultGuestLabel: "Tamu Undangan"
   };
