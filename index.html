@@ -1,42 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="id">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#faf8f5">
+
+  <meta name="description" content="Undangan pernikahan">
+
   <title>The Wedding of Laras & Ikyu</title>
+
   <link rel="stylesheet" href="style.css">
-  <link rel="preload" href="pages/page1.jpg" as="image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
 </head>
+
 <body>
-  <!-- Intro: title + enter button -->
-  <section id="intro" class="screen active">
-    <h1 class="intro-title">The Wedding of</h1>
-    <p class="intro-names">Laras & Ikyu</p>
-    <button type="button" id="btn-enter" class="btn-enter">Enter</button>
-  </section>
 
-  <!-- Main: fullscreen image, floating buttons -->
-  <section id="main" class="screen">
-    <div class="main-content">
-      <div class="image-wrap">
-        <img id="page-image" src="pages/page1.jpg" alt="Wedding illustration" loading="eager" />
-        <div id="hotspot-layer" class="hotspot-layer" aria-hidden="true"></div>
+  <!-- Horizontal swipe: scroll-snap on this viewport -->
+
+  <div id="swiper-viewport" class="swiper-viewport" tabindex="0">
+
+    <section id="slide-hero" class="swiper-slide swiper-slide--hero">
+
+      <div class="swiper-slide-inner">
+
+        <header class="invite-hero invite-hero--fullscreen">
+
+          <div class="hero-media">
+            <img src="pages/page1.jpg" alt="" class="hero-img" width="1200" height="800" loading="eager" />
+
+            <div class="hero-overlay hero-overlay--guest">
+              <p class="hero-guest" id="hero-guest"><span>Kepada Yth;</span> <strong id="guest-name">Tamu Undangan</strong></p>
+            </div>
+          </div>
+
+        </header>
+
       </div>
-    </div>
-    <div class="main-actions" aria-label="Actions">
-      <button type="button" id="btn-map" class="btn-action" aria-label="Show map" title="Show map">🗺️</button>
-      <button type="button" id="btn-flashlight" class="btn-flashlight btn-action" aria-label="Show clickable areas" title="Show clickable areas">💡</button>
-    </div>
-  </section>
 
-  <!-- Map popup: outside #main so fixed positioning works on mobile -->
-  <div id="map-popup" class="map-popup" aria-hidden="true">
-    <button type="button" id="btn-close-map" class="map-popup-close" aria-label="Close map">×</button>
-    <div class="map-popup-inner">
-      <img src="pages/maps.png" alt="Map" class="map-popup-img" />
-    </div>
+    </section>
+
+
+
+    <section id="slide-quote" class="swiper-slide swiper-slide--quote">
+
+      <div class="swiper-slide-inner">
+
+        <p class="quote-ref">QS. Ar-Rum 21</p>
+
+        <blockquote class="quote-text">
+
+          Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sungguh, pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir.
+
+        </blockquote>
+
+      </div>
+
+    </section>
+
+
+
+    <section id="slide-couple" class="swiper-slide swiper-slide--scroll">
+
+      <div class="swiper-slide-inner">
+
+        <h2 class="section-title">Mempelai</h2>
+
+        <div class="couple-swiper-wrap">
+
+          <div class="couple-swiper" id="couple-swiper" tabindex="0" role="region" aria-label="Mempelai">
+
+            <div class="couple-pane">
+              <article class="couple-card">
+                <img src="pages/Brides.png" alt="Annisa Larasati" class="couple-photo" loading="lazy" />
+                <p class="couple-name">Annisa Larasati</p>
+                <p class="couple-desc">Putri kedua dari Alfian Noor dan Sri Widjayanti</p>
+              </article>
+            </div>
+
+            <div class="couple-pane">
+              <article class="couple-card">
+                <img src="pages/Groom.png" alt="Muhammad Ikyu Arqie Ramadhan" class="couple-photo" loading="lazy" />
+                <p class="couple-name">Muhammad Ikyu Arqie Ramadhan</p>
+                <p class="couple-desc">Putra pertama dari Ir. Gunawan dan Dra. Harti Budi Yanti SE, AK, Msi</p>
+              </article>
+            </div>
+
+          </div>
+
+          <div class="couple-swiper-dots" id="couple-swiper-dots" role="group" aria-label="Pilih mempelai">
+            <button type="button" class="couple-dot is-active" aria-label="Mempelai wanita" aria-pressed="true" data-couple-index="0"></button>
+            <button type="button" class="couple-dot" aria-label="Mempelai pria" aria-pressed="false" data-couple-index="1"></button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <section id="slide-event" class="swiper-slide swiper-slide--event">
+
+      <div class="swiper-slide-inner">
+
+        <h2 class="section-title">Akad Nikah &amp; Resepsi</h2>
+
+        <p class="event-when" id="event-datetime">Sabtu, 27 Juni 2026
+Akad Nikah: Pukul 07.00 WIB
+Resepsi Pernikahan: Pukut 10.00 - 13.00 WIB</p>
+
+        <div class="countdown" id="countdown" aria-live="polite">
+
+          <div class="countdown-unit"><span id="cd-days">00</span><small>Hari</small></div>
+
+          <div class="countdown-unit"><span id="cd-hours">00</span><small>Jam</small></div>
+
+          <div class="countdown-unit"><span id="cd-mins">00</span><small>Menit</small></div>
+
+          <div class="countdown-unit"><span id="cd-secs">00</span><small>Detik</small></div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <section id="slide-maps" class="swiper-slide swiper-slide--scroll">
+
+      <div class="swiper-slide-inner">
+
+        <h2 class="section-title">Lokasi</h2>
+
+        <p class="venue-name">Ballroom Ijen Suites Resort &amp; Convention</p>
+
+        <p class="venue-address">Jl. Ijen Nirwana Raya Blok A no. 16, Malang</p>
+
+        <a id="map-link" href="https://maps.app.goo.gl/a1tnFZWcpCmaieE39" target="_blank" rel="noopener noreferrer" class="btn-maps">Petunjuk ke lokasi</a>
+
+      </div>
+
+    </section>
+
+
+
+    <section id="slide-gift" class="swiper-slide swiper-slide--scroll">
+
+      <div class="swiper-slide-inner">
+
+        <h2 class="section-title">Tanda kasih</h2>
+
+        <p class="gift-intro">Terima kasih telah menambah kebahagiaan hari pernikahan kami.</p>
+
+        <ul class="bank-list">
+
+          <li>BCA - ANNISA LARASATI - 7330939944</li>
+
+          <li>BSI - ANNISA LARASATI - 7200578907</li>
+
+          <li>OVO/GOPAY - 081514573627</li>
+
+        </ul>
+
+      </div>
+
+    </section>
+
+
+
+    <section id="slide-thanks" class="swiper-slide swiper-slide--footer">
+
+      <div class="swiper-slide-inner">
+
+        <footer class="invite-footer">
+
+          <p class="thanks-message">Ungkapan terima kasih yang sangat tulus dari kami untuk berkenan hadir dan turut memberi doa restu kepada kedua mempelai</p>
+
+          <p class="thanks-prayer">Jazakumutlah Khairan Katsiran</p>
+
+          <p class="thanks-family">Dari kami yang berbahagia<br><strong>Alfian Noor dan Sri Widjayanti</strong></p>
+
+        </footer>
+
+      </div>
+
+    </section>
+
   </div>
 
-  <script src="script.js"></script>
+
+
+  <nav class="section-nav-bottom" id="section-nav" aria-label="Menu slide">
+
+    <button type="button" class="nav-item is-active" data-slide="0" aria-current="page">Beranda</button>
+
+    <button type="button" class="nav-item" data-slide="1">Quotes</button>
+
+    <button type="button" class="nav-item" data-slide="2">Mempelai</button>
+
+    <button type="button" class="nav-item" data-slide="3">Acara</button>
+
+    <button type="button" class="nav-item" data-slide="4">Lokasi</button>
+
+    <button type="button" class="nav-item" data-slide="5">Hadiah</button>
+
+    <button type="button" class="nav-item" data-slide="6">Terima kasih</button>
+
+  </nav>
+
+  <audio id="bgm-audio" src="bgm.mp3" loop autoplay playsinline preload="auto"></audio>
+  <button type="button" id="bgm-toggle" class="bgm-toggle" aria-pressed="true" aria-label="Matikan musik" title="Matikan musik">&#9835;</button>
+
+
+
+  <script src="app.js"></script>
+
 </body>
+
 </html>
+
+
