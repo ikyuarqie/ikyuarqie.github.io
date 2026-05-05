@@ -12,8 +12,16 @@
 
   function getGuestNameFromQuery() {
     try {
-      var q = new URLSearchParams(window.location.search).get("to");
-      if (q && String(q).trim()) return decodeURIComponent(String(q).trim());
+      var params = new URLSearchParams(window.location.search);
+      var raw =
+        params.get("to") ||
+        params.get("nama") ||
+        params.get("guest") ||
+        params.get("kepada");
+      if (!raw) return INVITE.defaultGuestLabel;
+      // Also support links where spaces are sent as "+"
+      var normalized = String(raw).replace(/\+/g, " ").trim();
+      return normalized || INVITE.defaultGuestLabel;
     } catch (_) {}
     return INVITE.defaultGuestLabel;
   }

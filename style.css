@@ -83,7 +83,7 @@ body {
 .swiper-slide:not(.swiper-slide--hero) {
   background-image: url("pages/Background.jpg");
   background-size: cover;
-  background-position: center center;
+  background-position: center bottom;
   background-repeat: no-repeat;
 }
 
@@ -101,7 +101,7 @@ body {
 }
 
 /* Non-hero slides: reserve space for decorative footer art and center content vertically */
-.swiper-slide:not(.swiper-slide--hero):not(#slide-couple) .swiper-slide-inner {
+.swiper-slide:not(.swiper-slide--hero) .swiper-slide-inner {
   min-height: calc(100% - var(--page-footer-art-h));
   justify-content: center;
   padding-bottom: max(var(--pad-section-bottom), var(--page-footer-art-h));
@@ -130,14 +130,6 @@ body {
 .swiper-slide--scroll .swiper-slide-inner {
   justify-content: center;
   padding-top: max(var(--pad-section-top), env(safe-area-inset-top, 0px));
-}
-
-/* Mempelai uses its own original inner spacing */
-#slide-couple .swiper-slide-inner {
-  justify-content: flex-start;
-  padding-top: 50px;
-  min-height: 0;
-  padding-bottom: max(var(--pad-section-bottom), 1.75rem);
 }
 
 /* ----- Bottom sticky menu ----- */
@@ -392,20 +384,26 @@ body {
 
 .couple-card {
   text-align: center;
-  width: 100%;
-  max-width: 14rem;
+  width: min(100%, clamp(10rem, 54vw, 13.5rem));
+  margin-inline: auto;
 }
 
 .couple-photo {
   width: 100%;
   height: auto;
-  aspect-ratio: 3 / 4;
+  max-height: min(39vh, 18rem);
   object-fit: contain;
   object-position: center center;
   border-radius: 8px;
   display: block;
   margin-inline: auto;
   margin-bottom: 0.75rem;
+}
+
+@media (max-height: 740px) {
+  .couple-photo {
+    max-height: min(35vh, 15.5rem);
+  }
 }
 
 .couple-name {
