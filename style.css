@@ -293,25 +293,29 @@ body {
 
 /* Quote — hanya judul (QS) tebal & rata tengah */
 .quote-ref {
+  font-family: var(--sans);
   text-align: center;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--muted);
-  margin: 0 0 1rem;
+  font-size: clamp(0.94rem, 2.8vw, 1.12rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a5a73;
+  margin: 0 0 1.35rem;
   flex-shrink: 0;
 }
 
 .quote-text {
-  font-family: var(--serif);
-  font-size: clamp(1rem, 2.8vw, 1.15rem);
-  font-weight: 400;
-  font-style: italic;
-  line-height: 1.75;
+  font-family: "Lora", Georgia, serif;
+  font-size: clamp(1rem, 2.9vw, 1.13rem);
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.72;
   text-align: center;
   margin: 0;
-  padding: 0 0.25rem;
-  color: var(--bg);
+  padding: 0 0.6rem;
+  max-width: 27rem;
+  margin-inline: auto;
+  color: #1f2f4a;
   flex-shrink: 0;
 }
 
@@ -385,12 +389,12 @@ body {
 
 .couple-card {
   text-align: center;
-  width: min(100%, clamp(10rem, 54vw, 13.5rem));
+  width: min(100%, clamp(14rem, 82vw, 19.5rem));
   margin-inline: auto;
 }
 
 .couple-photo {
-  width: 100%;
+  width: min(100%, clamp(10rem, 54vw, 13.5rem));
   height: auto;
   max-height: min(39vh, 18rem);
   object-fit: contain;
@@ -409,12 +413,13 @@ body {
 
 .couple-name {
   font-family: var(--serif);
-  font-size: clamp(1.4rem, 4.2vw, 1.7rem);
+  font-size: clamp(0.98rem, 3.45vw, 1.28rem);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
   line-height: 1.22;
   margin: 0 0 0.4rem;
   color: #1f2f4a;
+  white-space: nowrap;
 }
 
 .couple-desc {
