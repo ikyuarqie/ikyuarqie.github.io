@@ -83,7 +83,8 @@ body {
 .swiper-slide:not(.swiper-slide--hero) {
   background-image: url("pages/Background.jpg");
   background-size: cover;
-  background-position: center bottom;
+  /* Push art a bit lower so the empty olive strip is hidden by footer/nav */
+  background-position: center calc(100% + 40px);
   background-repeat: no-repeat;
 }
 
@@ -660,7 +661,9 @@ code {
   }
 
   .bgm-toggle {
-    right: calc(50% - (min(100vw, 430px) / 2) + 0.8rem);
+    left: 50%;
+    right: auto;
+    margin-left: calc(215px - 2.95rem);
     transform: none;
   }
 }
