@@ -47,7 +47,7 @@
     if (!audio || !btn) return;
 
     var isEnabled = true;
-    audio.volume = 0.3;
+    audio.volume = 0.2;
 
     function syncButton() {
       btn.textContent = "\u266b";
