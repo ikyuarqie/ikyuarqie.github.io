@@ -354,6 +354,9 @@ body {
   font-size: clamp(1rem, 3.8vw, 1.22rem);
   font-weight: 600;
   color: #fff;
+  white-space: pre-line;
+  display: inline-block;
+  line-height: 1.35;
 }
 
 /* Quote — hanya judul (QS) tebal & rata tengah */

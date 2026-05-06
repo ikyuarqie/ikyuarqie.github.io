@@ -26,9 +26,28 @@
     return INVITE.defaultGuestLabel;
   }
 
+  function hasGuestNameInQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var raw =
+        params.get("to") ||
+        params.get("nama") ||
+        params.get("guest") ||
+        params.get("kepada");
+      return !!(raw && String(raw).trim());
+    } catch (_) {}
+    return false;
+  }
+
   function initGuestName() {
     var el = document.getElementById("guest-name");
-    if (el) el.textContent = getGuestNameFromQuery();
+    if (!el) return;
+    var guestName = getGuestNameFromQuery();
+    if (hasGuestNameInQuery()) {
+      el.textContent = guestName + "\n& Keluarga";
+    } else {
+      el.textContent = guestName;
+    }
   }
 
   function initEventText() {
