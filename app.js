@@ -5,8 +5,11 @@
 (function () {
   var INVITE = {
     eventStartISO: "2026-06-27T07:00:00",
+    eventEndISO: "2026-06-27T13:00:00",
     eventDisplayText: "Sabtu, 27 Juni 2026\nAkad Nikah: Pukul 07.00 WIB\nResepsi Pernikahan: Pukul 10.00 - 13.00 WIB",
     mapsUrl: "https://maps.app.goo.gl/a1tnFZWcpCmaieE39",
+    calendarTitle: "Akad Nikah & Resepsi - Ikyu & Laras",
+    calendarLocation: "Ballroom Ijen Suites Resort & Convention, Jl. Ijen Nirwana Raya Blok A no. 16, Malang",
     defaultGuestLabel: "Tamu Undangan"
   };
 
@@ -58,6 +61,44 @@
   function initMapsLink() {
     var a = document.getElementById("map-link");
     if (a && INVITE.mapsUrl) a.href = INVITE.mapsUrl;
+  }
+
+  function toGoogleCalendarLocalDate(isoText) {
+    var d = new Date(isoText);
+    if (isNaN(d.getTime())) return "";
+    function p2(n) {
+      return n < 10 ? "0" + n : String(n);
+    }
+    return (
+      String(d.getFullYear()) +
+      p2(d.getMonth() + 1) +
+      p2(d.getDate()) +
+      "T" +
+      p2(d.getHours()) +
+      p2(d.getMinutes()) +
+      p2(d.getSeconds())
+    );
+  }
+
+  function initCalendarLink() {
+    var a = document.getElementById("calendar-link");
+    if (!a) return;
+
+    var start = toGoogleCalendarLocalDate(INVITE.eventStartISO);
+    var end = toGoogleCalendarLocalDate(INVITE.eventEndISO || INVITE.eventStartISO);
+    var details = INVITE.eventDisplayText;
+    if (!start || !end) {
+      a.removeAttribute("href");
+      return;
+    }
+
+    var url =
+      "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" + encodeURIComponent(INVITE.calendarTitle || "Undangan Pernikahan") +
+      "&dates=" + encodeURIComponent(start + "/" + end) +
+      "&details=" + encodeURIComponent(details) +
+      "&location=" + encodeURIComponent(INVITE.calendarLocation || "");
+    a.href = url;
   }
 
   function initSlideCats() {
@@ -326,6 +367,7 @@
     initGuestName();
     initEventText();
     initMapsLink();
+    initCalendarLink();
     tickCountdown();
     setInterval(tickCountdown, 1000);
     initSwipeAndNav();
