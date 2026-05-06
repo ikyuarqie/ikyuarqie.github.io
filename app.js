@@ -41,30 +41,57 @@
     if (a && INVITE.mapsUrl) a.href = INVITE.mapsUrl;
   }
 
-  function initRandomSlideBackgrounds() {
+  function initSlideCats() {
     var nonHeroSlides = document.querySelectorAll(".swiper-slide:not(.swiper-slide--hero)");
     if (!nonHeroSlides || !nonHeroSlides.length) return;
 
-    var pools = [
-      "pages/Background.jpg",
-      "pages/Background1.jpg",
-      "pages/Background2.jpg",
-      "pages/Background3.jpg",
-      "pages/Background4.jpg",
-      "pages/Background5.jpg"
-    ];
-
-    // Shuffle once so each slide gets a distinct background per refresh.
-    for (var j = pools.length - 1; j > 0; j--) {
-      var k = Math.floor(Math.random() * (j + 1));
-      var temp = pools[j];
-      pools[j] = pools[k];
-      pools[k] = temp;
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
     }
 
+    var PUYOU_BASE_WIDTH = 120;
+    var LEONA_BASE_WIDTH = 132;
+
     for (var i = 0; i < nonHeroSlides.length; i++) {
-      var pick = pools[i % pools.length];
-      nonHeroSlides[i].style.backgroundImage = 'url("' + pick + '")';
+      var slide = nonHeroSlides[i];
+      var layer = document.createElement("div");
+      layer.className = "slide-cat-layer";
+
+      var puyou = document.createElement("img");
+      puyou.src = "pages/Puyou.png";
+      puyou.alt = "";
+      puyou.className = "slide-cat slide-cat--puyou";
+      // Random lane choice keeps layout lively while staying separated.
+      var puyouOnRight = Math.random() > 0.5;
+      puyou.style.left = (puyouOnRight ? randomBetween(56, 78) : randomBetween(10, 26)).toFixed(2) + "%";
+      puyou.style.bottom = randomBetween(14, 26).toFixed(2) + "px";
+      puyou.style.width = Math.round(PUYOU_BASE_WIDTH * randomBetween(0.9, 1.1)) + "px";
+      puyou.style.animationDuration = randomBetween(2.2, 3.9).toFixed(2) + "s";
+      puyou.style.animationDelay = randomBetween(0, 1.4).toFixed(2) + "s";
+
+      var leona = document.createElement("img");
+      leona.src = "pages/Leona.png";
+      leona.alt = "";
+      leona.className = "slide-cat slide-cat--leona";
+      // Three clearly separated vertical lanes: lower, middle, upper.
+      var leonaLanes = [
+        { name: "lower", bottom: 8 },
+        { name: "middle", bottom: 34 },
+        { name: "upper", bottom: 62 }
+      ];
+      var leonaLane = leonaLanes[Math.floor(Math.random() * leonaLanes.length)];
+      leona.classList.add("slide-cat--lane-" + leonaLane.name);
+      leona.style.bottom = leonaLane.bottom + "px";
+      leona.style.width = Math.round(LEONA_BASE_WIDTH * randomBetween(0.9, 1.1)) + "px";
+      // Use opposite lane from Puyou so they never overlap.
+      leona.style.left = (puyouOnRight ? randomBetween(8, 30) : randomBetween(54, 74)).toFixed(2) + "%";
+      leona.style.setProperty("--walk-x", randomBetween(20, 40).toFixed(2) + "px");
+      leona.style.animationDuration = randomBetween(6.4, 10.8).toFixed(2) + "s";
+      leona.style.animationDelay = randomBetween(0.1, 1.8).toFixed(2) + "s";
+
+      layer.appendChild(puyou);
+      layer.appendChild(leona);
+      slide.appendChild(layer);
     }
   }
 
@@ -276,7 +303,7 @@
   }
 
   function init() {
-    initRandomSlideBackgrounds();
+    initSlideCats();
     initGuestName();
     initEventText();
     initMapsLink();
