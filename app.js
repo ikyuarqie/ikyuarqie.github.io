@@ -64,6 +64,14 @@
   }
 
   function toGoogleCalendarLocalDate(isoText) {
+    // Fast-path parser for fixed ISO-like inputs (better Android WebView compatibility)
+    var m = String(isoText || "").match(
+      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/
+    );
+    if (m) {
+      return m[1] + m[2] + m[3] + "T" + m[4] + m[5] + (m[6] || "00");
+    }
+
     var d = new Date(isoText);
     if (isNaN(d.getTime())) return "";
     function p2(n) {
@@ -88,7 +96,7 @@
     var end = toGoogleCalendarLocalDate(INVITE.eventEndISO || INVITE.eventStartISO);
     var details = INVITE.eventDisplayText;
     if (!start || !end) {
-      a.removeAttribute("href");
+      // Keep fallback href from HTML instead of breaking to "#".
       return;
     }
 
