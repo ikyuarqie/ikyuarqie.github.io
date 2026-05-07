@@ -742,6 +742,93 @@ body {
   color: #3b4f6b;
 }
 
+.gift-bottom-bank {
+  margin: 0.85rem 0 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: clamp(0.88rem, 2.5vw, 0.95rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #2d4160;
+}
+
+/* RSVP */
+.rsvp-intro {
+  text-align: center;
+  margin: 0 auto 0.85rem;
+  max-width: 29rem;
+  font-size: clamp(0.93rem, 2.6vw, 1rem);
+  line-height: 1.62;
+  color: #30435f;
+}
+
+.rsvp-name-wrap {
+  max-width: 24rem;
+  margin: 0 auto 0.75rem;
+}
+
+.rsvp-name-label {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.84rem;
+  letter-spacing: 0.03em;
+  color: #2d4160;
+}
+
+.rsvp-name-input {
+  width: 100%;
+  border: 1px solid rgba(48, 67, 95, 0.22);
+  border-radius: 12px;
+  padding: 0.62rem 0.75rem;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  color: #1f2f4a;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.rsvp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.btn-rsvp {
+  appearance: none;
+  border-radius: 999px;
+  padding: 0.62rem 1.05rem;
+  border: 1px solid rgba(48, 67, 95, 0.22);
+  background: rgba(255, 255, 255, 0.84);
+  color: #1f2f4a;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn-rsvp--yes {
+  border-color: rgba(52, 103, 73, 0.35);
+}
+
+.btn-rsvp--no {
+  border-color: rgba(133, 72, 72, 0.35);
+}
+
+.btn-rsvp:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.rsvp-status {
+  min-height: 1.2em;
+  margin: 0.7rem 0 0;
+  text-align: center;
+  font-size: 0.88rem;
+  color: #2f4462;
+}
+
 .bank-list {
   list-style: none;
   padding: 0;

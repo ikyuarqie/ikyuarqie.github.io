@@ -10,6 +10,15 @@
     mapsUrl: "https://maps.app.goo.gl/a1tnFZWcpCmaieE39",
     calendarTitle: "Akad Nikah & Resepsi - Ikyu & Laras",
     calendarLocation: "Ballroom Ijen Suites Resort & Convention, Jl. Ijen Nirwana Raya Blok A no. 16, Malang",
+    firebaseConfig: {
+      apiKey: "AIzaSyCKnkDiidx2T_J8mD9cFXzfiWCxwEWn4m4",
+      authDomain: "larasamaikyu.firebaseapp.com",
+      projectId: "larasamaikyu",
+      storageBucket: "larasamaikyu.firebasestorage.app",
+      messagingSenderId: "497756031939",
+      appId: "1:497756031939:web:f7a5f1d7636aa6db118b76"
+    },
+    rsvpCollection: "rsvps",
     defaultGuestLabel: "Tamu Undangan"
   };
 
@@ -107,6 +116,104 @@
       "&details=" + encodeURIComponent(details) +
       "&location=" + encodeURIComponent(INVITE.calendarLocation || "");
     a.href = url;
+  }
+
+  function initRsvp() {
+    var statusEl = document.getElementById("rsvp-status");
+    var buttons = document.querySelectorAll(".btn-rsvp[data-rsvp]");
+    var nameWrap = document.getElementById("rsvp-name-wrap");
+    var nameInput = document.getElementById("rsvp-name-input");
+    if (!buttons || !buttons.length) return;
+
+    function setStatus(text, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.style.color = isError ? "#7b3340" : "#2f4462";
+    }
+
+    function setButtonsDisabled(disabled) {
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = !!disabled;
+      }
+    }
+
+    function getFirestoreDb() {
+      try {
+        if (!window.firebase || !window.firebase.firestore) return null;
+        if (!window.firebase.apps || !window.firebase.apps.length) {
+          window.firebase.initializeApp(INVITE.firebaseConfig);
+        }
+        var firestore = window.firebase.firestore();
+        // Improve compatibility for restrictive networks / Android WebView.
+        firestore.settings({
+          experimentalAutoDetectLongPolling: true,
+          useFetchStreams: false
+        });
+        return firestore;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    var db = getFirestoreDb();
+    if (!db) {
+      setStatus("RSVP belum tersedia. Coba refresh halaman.", true);
+      return;
+    }
+
+    var needManualName = !hasGuestNameInQuery();
+    if (nameWrap) {
+      nameWrap.hidden = !needManualName;
+    }
+
+    for (var b = 0; b < buttons.length; b++) {
+      buttons[b].addEventListener("click", function () {
+        var attendance = this.getAttribute("data-rsvp");
+        if (attendance !== "yes" && attendance !== "no") return;
+
+        var guestName = getGuestNameFromQuery();
+        if (needManualName) {
+          guestName = nameInput ? String(nameInput.value || "").trim() : "";
+          if (!guestName) {
+            setStatus("Mohon isi nama terlebih dahulu.", true);
+            if (nameInput) nameInput.focus();
+            return;
+          }
+        }
+        var payload = {
+          name: guestName,
+          attendance: attendance,
+          createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+          createdAtClient: new Date().toISOString(),
+          userAgent: navigator.userAgent || ""
+        };
+
+        setButtonsDisabled(true);
+        setStatus("Mengirim RSVP...", false);
+
+        db.collection(INVITE.rsvpCollection)
+          .add(payload)
+          .then(function () {
+            setStatus(
+              attendance === "yes"
+                ? "Terima kasih, konfirmasi hadir Anda sudah kami terima."
+                : "Terima kasih, konfirmasi Anda sudah kami terima.",
+              false
+            );
+          })
+          .catch(function (err) {
+            var code = err && err.code ? String(err.code) : "";
+            if (code === "permission-denied") {
+              setStatus("RSVP ditolak Firestore Rules (permission-denied).", true);
+            } else if (code === "unavailable") {
+              setStatus("Koneksi ke Firestore sedang bermasalah (unavailable). Coba lagi.", true);
+            } else {
+              setStatus("Gagal mengirim RSVP. Coba lagi sebentar.", true);
+            }
+            setButtonsDisabled(false);
+          });
+      });
+    }
   }
 
   function initSlideCats() {
@@ -376,6 +483,7 @@
     initEventText();
     initMapsLink();
     initCalendarLink();
+    initRsvp();
     tickCountdown();
     setInterval(tickCountdown, 1000);
     initSwipeAndNav();

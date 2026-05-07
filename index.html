@@ -175,6 +175,32 @@ Resepsi Pernikahan: 10.00 - 13.00 WIB</p>
           <p class="gift-prayer-meaning">(Semoga Allah memberkahimu dan senantiasa memberkahimu, dan mengumpulkan kalian berdua dalam kebaikan) (HR. Ahmad)</p>
         </div>
 
+        <p class="gift-bottom-bank">Untuk Hadiah Tambahan bisa dikirimkan ke:<br>BCA - 7330939944</p>
+
+      </div>
+
+    </section>
+
+    <section id="slide-rsvp" class="swiper-slide swiper-slide--scroll">
+
+      <div class="swiper-slide-inner">
+
+        <h2 class="section-title">RSVP</h2>
+
+        <p class="rsvp-intro">Mohon konfirmasi kehadiran Anda agar kami dapat mempersiapkan acara dengan lebih baik.</p>
+
+        <div id="rsvp-name-wrap" class="rsvp-name-wrap" hidden>
+          <label for="rsvp-name-input" class="rsvp-name-label">Nama Anda</label>
+          <input id="rsvp-name-input" class="rsvp-name-input" type="text" placeholder="Tulis nama Anda" autocomplete="name" maxlength="120">
+        </div>
+
+        <div class="rsvp-actions">
+          <button type="button" class="btn-rsvp btn-rsvp--yes" data-rsvp="yes">Ya, Saya Hadir</button>
+          <button type="button" class="btn-rsvp btn-rsvp--no" data-rsvp="no">Maaf, Belum Bisa Hadir</button>
+        </div>
+
+        <p id="rsvp-status" class="rsvp-status" aria-live="polite"></p>
+
       </div>
 
     </section>
@@ -216,8 +242,8 @@ Resepsi Pernikahan: 10.00 - 13.00 WIB</p>
     <button type="button" class="nav-item" data-slide="4">Lokasi</button>
 
     <button type="button" class="nav-item" data-slide="5">Hadiah</button>
-
-    <button type="button" class="nav-item" data-slide="6">Terima kasih</button>
+    <button type="button" class="nav-item" data-slide="6">RSVP</button>
+    <button type="button" class="nav-item" data-slide="7">Terima kasih</button>
 
   </nav>
 
@@ -226,6 +252,8 @@ Resepsi Pernikahan: 10.00 - 13.00 WIB</p>
 
 
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="app.js"></script>
 
 </body>
