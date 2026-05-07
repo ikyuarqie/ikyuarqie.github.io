@@ -698,8 +698,48 @@ body {
 .gift-intro {
   text-align: center;
   max-width: 28rem;
-  margin: 0 auto 1rem;
-  font-size: 0.95rem;
+  margin: 0 auto 1.1rem;
+  font-size: clamp(0.94rem, 2.6vw, 1rem);
+  line-height: 1.65;
+  color: #2f3f5b;
+}
+
+.gift-prayer {
+  text-align: center;
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 0.9rem 0.95rem 1rem;
+  border-radius: 14px;
+  background: rgba(249, 245, 238, 0.56);
+  border: 1px solid rgba(55, 72, 101, 0.14);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.gift-prayer-title {
+  margin: 0 0 0.6rem;
+  font-family: var(--serif);
+  font-size: clamp(1.2rem, 3.9vw, 1.45rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #1f2f4a;
+}
+
+.gift-prayer-arabic {
+  margin: 0 0 0.75rem;
+  font-family: var(--serif);
+  font-size: clamp(1rem, 3vw, 1.14rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.58;
+  color: #233754;
+}
+
+.gift-prayer-meaning {
+  margin: 0;
+  font-size: clamp(0.9rem, 2.55vw, 0.98rem);
+  line-height: 1.68;
+  color: #3b4f6b;
 }
 
 .bank-list {
