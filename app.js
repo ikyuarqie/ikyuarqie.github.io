@@ -51,6 +51,17 @@
     return false;
   }
 
+  function getPicFromQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var raw = params.get("pic");
+      if (!raw) return "";
+      var normalized = String(raw).replace(/\+/g, " ").trim();
+      return normalized;
+    } catch (_) {}
+    return "";
+  }
+
   function initGuestName() {
     var el = document.getElementById("guest-name");
     if (!el) return;
@@ -182,6 +193,7 @@
         }
         var payload = {
           name: guestName,
+          pic: getPicFromQuery(),
           attendance: attendance,
           createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
           createdAtClient: new Date().toISOString(),
