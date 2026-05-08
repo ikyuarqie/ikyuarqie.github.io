@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>List Konfirmasi RSVP</title>
+  <style>
+    :root {
+      --line: rgba(116, 141, 179, 0.25);
+      --text: #1f2b40;
+      --muted: #5d6d89;
+      --yes: #1f8f5f;
+      --no: #c24d5d;
+      --card-bg: rgba(255, 255, 255, 0.58);
+      --head-bg: rgba(241, 246, 255, 0.92);
+      --shadow: 0 16px 42px rgba(13, 30, 58, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 10% -10%, #dfe9ff 0%, transparent 60%),
+                  radial-gradient(1200px 500px at 100% 0%, #cfe0ff 0%, transparent 55%),
+                  #dbe7fb;
+    }
+    .shell {
+      position: relative;
+      min-height: 100vh;
+      width: min(100vw, 430px);
+      margin: 0 auto;
+      background-image: url("../pages/Background.jpg");
+      background-size: cover;
+      background-position: center bottom;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px 14px 18px;
+      display: flex;
+    }
+    .panel {
+      width: 100%;
+      border: 1px solid rgba(130, 154, 192, 0.35);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.72), var(--card-bg));
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(26, 48, 88, 0.12);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 34px);
+    }
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #18263d;
+    }
+    .sub {
+      margin: 4px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .summary {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .summary-item {
+      border: 1px solid rgba(130, 154, 192, 0.26);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.62);
+      text-align: center;
+      padding: 8px 6px;
+    }
+    .summary-label {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6c7c97;
+    }
+    .summary-value {
+      display: block;
+      margin-top: 2px;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: #18263d;
+    }
+    .toolbar {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 6px;
+      border: 1px solid rgba(130, 154, 192, 0.3);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: 0 8px 16px rgba(33, 53, 90, 0.08);
+    }
+    .filter-select {
+      border: 1px solid rgba(130, 154, 192, 0.45);
+      border-radius: 999px;
+      height: 33px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.88);
+      color: #1f2b40;
+      font-size: 0.82rem;
+      letter-spacing: 0.01em;
+      outline: none;
+    }
+    .btn {
+      border: 1px solid rgba(130, 154, 192, 0.5);
+      border-radius: 999px;
+      width: 33px;
+      height: 33px;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1f2b40;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(24, 37, 60, 0.14);
+    }
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .status {
+      margin: 10px 0 0;
+      min-height: 1.2em;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .list-wrap {
+      margin-top: 10px;
+      border: 1px solid rgba(130, 154, 192, 0.28);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.8);
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .table-scroll {
+      overflow: auto;
+      flex: 1;
+      min-height: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--head-bg);
+      color: #4f607f;
+      font-size: 0.76rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(130, 154, 192, 0.28);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(141, 163, 198, 0.2);
+      font-size: 0.9rem;
+    }
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+    tbody tr:nth-child(2n) td {
+      background: rgba(243, 248, 255, 0.68);
+    }
+    .status-text {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .status-text--yes { color: var(--yes); }
+    .status-text--no { color: var(--no); }
+    .pager {
+      border-top: 1px solid rgba(130, 154, 192, 0.24);
+      background: rgba(244, 249, 255, 0.85);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .pager-info {
+      font-size: 0.8rem;
+      color: #506181;
+    }
+    .pager-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .pager-btn {
+      border: 1px solid rgba(130, 154, 192, 0.38);
+      background: rgba(255, 255, 255, 0.9);
+      color: #2a3a54;
+      border-radius: 10px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .pager-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel">
+      <h1>List Konfirmasi</h1>
+      <p class="sub">Data RSVP tamu</p>
+      <div class="summary">
+        <div class="summary-item">
+          <span class="summary-label">Total</span>
+          <span id="count-total" class="summary-value">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Hadir</span>
+          <span id="count-yes" class="summary-value">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tidak Hadir</span>
+          <span id="count-no" class="summary-value">0</span>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="controls">
+          <select id="status-filter" class="filter-select" aria-label="Filter status RSVP">
+            <option value="all">Semua</option>
+            <option value="yes">Hadir</option>
+            <option value="no">Tidak Hadir</option>
+          </select>
+          <button id="reload-btn" class="btn" type="button" aria-label="Refresh Data" title="Refresh Data">&#10227;</button>
+        </div>
+      </div>
+      <p id="status" class="status"></p>
+
+      <div class="list-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="rsvp-rows">
+              <tr><td colspan="2">Belum ada data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="pager-info" class="pager-info">Halaman 1 dari 1</span>
+          <div class="pager-actions">
+            <button id="prev-btn" class="pager-btn" type="button">Sebelumnya</button>
+            <button id="next-btn" class="pager-btn" type="button">Berikutnya</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    (function () {
+      var firebaseConfig = {
+        apiKey: "AIzaSyCKnkDiidx2T_J8mD9cFXzfiWCxwEWn4m4",
+        authDomain: "larasamaikyu.firebaseapp.com",
+        projectId: "larasamaikyu",
+        storageBucket: "larasamaikyu.firebasestorage.app",
+        messagingSenderId: "497756031939",
+        appId: "1:497756031939:web:f7a5f1d7636aa6db118b76"
+      };
+
+      var rowsEl = document.getElementById("rsvp-rows");
+      var statusEl = document.getElementById("status");
+      var reloadBtn = document.getElementById("reload-btn");
+      var countTotalEl = document.getElementById("count-total");
+      var countYesEl = document.getElementById("count-yes");
+      var countNoEl = document.getElementById("count-no");
+      var pagerInfoEl = document.getElementById("pager-info");
+      var prevBtn = document.getElementById("prev-btn");
+      var nextBtn = document.getElementById("next-btn");
+      var statusFilterEl = document.getElementById("status-filter");
+      var collectionName = "rsvps";
+      var allItems = [];
+      var pageSize = 12;
+      var currentPage = 1;
+      var activeFilter = "all";
+
+      function setStatus(text, isError) {
+        statusEl.textContent = text || "";
+        statusEl.style.color = isError ? "#8a4343" : "#566681";
+      }
+
+      function safeText(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function initDb() {
+        if (!window.firebase || !window.firebase.firestore) return null;
+        if (!window.firebase.apps || !window.firebase.apps.length) {
+          window.firebase.initializeApp(firebaseConfig);
+        }
+        var db = window.firebase.firestore();
+        db.settings({
+          experimentalAutoDetectLongPolling: true,
+          useFetchStreams: false
+        });
+        return db;
+      }
+
+      function renderRows() {
+        var items = allItems;
+        if (activeFilter === "yes" || activeFilter === "no") {
+          items = items.filter(function (x) { return x.attendance === activeFilter; });
+        }
+        if (!items.length) {
+          rowsEl.innerHTML = "<tr><td colspan=\"2\">Tidak ada data untuk filter ini.</td></tr>";
+          countTotalEl.textContent = "0";
+          countYesEl.textContent = "0";
+          countNoEl.textContent = "0";
+          pagerInfoEl.textContent = "Halaman 1 dari 1";
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+          return;
+        }
+
+        var totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+        var startIdx = (currentPage - 1) * pageSize;
+        var pageItems = items.slice(startIdx, startIdx + pageSize);
+
+        var html = "";
+        for (var i = 0; i < pageItems.length; i++) {
+          var item = pageItems[i];
+          var isYes = item.attendance === "yes";
+          var statusText = isYes ? "Hadir" : "Tidak Hadir";
+          var statusClass = isYes ? "status-text--yes" : "status-text--no";
+          html += "<tr>"
+            + "<td>" + safeText(item.name || "-") + "</td>"
+            + "<td><span class=\"status-text " + statusClass + "\">" + statusText + "</span></td>"
+            + "</tr>";
+        }
+        rowsEl.innerHTML = html;
+        countTotalEl.textContent = String(items.length);
+        countYesEl.textContent = String(items.filter(function (x) { return x.attendance === "yes"; }).length);
+        countNoEl.textContent = String(items.filter(function (x) { return x.attendance === "no"; }).length);
+        pagerInfoEl.textContent = "Halaman " + currentPage + " dari " + totalPages;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+      }
+
+      function loadData() {
+        var db = initDb();
+        if (!db) {
+          setStatus("Firebase SDK tidak tersedia.", true);
+          return;
+        }
+
+        reloadBtn.disabled = true;
+        setStatus("Mengambil data...");
+
+        db.collection(collectionName)
+          .orderBy("createdAt", "desc")
+          .get()
+          .then(function (snapshot) {
+            var items = [];
+            snapshot.forEach(function (doc) {
+              items.push(doc.data() || {});
+            });
+            allItems = items;
+            currentPage = 1;
+            renderRows();
+            setStatus("Data dimuat: " + items.length + " tamu.");
+          })
+          .catch(function (err) {
+            var code = err && err.code ? String(err.code) : "";
+            if (code === "permission-denied") {
+              setStatus("Read ditolak Firestore Rules (permission-denied).", true);
+            } else if (code === "unavailable") {
+              setStatus("Koneksi Firestore bermasalah (unavailable).", true);
+            } else {
+              setStatus("Gagal mengambil data RSVP.", true);
+            }
+          })
+          .finally(function () {
+            reloadBtn.disabled = false;
+          });
+      }
+
+      reloadBtn.addEventListener("click", loadData);
+      prevBtn.addEventListener("click", function () {
+        currentPage -= 1;
+        renderRows();
+      });
+      nextBtn.addEventListener("click", function () {
+        currentPage += 1;
+        renderRows();
+      });
+      statusFilterEl.addEventListener("change", function () {
+        activeFilter = this.value || "all";
+        currentPage = 1;
+        renderRows();
+      });
+      loadData(); // auto refresh on open
+    })();
+  </script>
+</body>
+</html>
