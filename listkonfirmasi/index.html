@@ -206,6 +206,18 @@
     }
     .status-text--yes { color: var(--yes); }
     .status-text--no { color: var(--no); }
+    .pic-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #4f607f;
+      white-space: nowrap;
+    }
+    thead th.col-pic,
+    tbody td.col-pic {
+      width: 4.5rem;
+    }
     .pager {
       border-top: 1px solid rgba(130, 154, 192, 0.24);
       background: rgba(244, 249, 255, 0.85);
@@ -260,9 +272,12 @@
       <div class="toolbar">
         <div class="controls">
           <select id="status-filter" class="filter-select" aria-label="Filter status RSVP">
-            <option value="all">Semua</option>
+            <option value="all">Semua Status</option>
             <option value="yes">Hadir</option>
             <option value="no">Tidak Hadir</option>
+          </select>
+          <select id="pic-filter" class="filter-select" aria-label="Filter PIC">
+            <option value="all">Semua PIC</option>
           </select>
           <button id="reload-btn" class="btn" type="button" aria-label="Refresh Data" title="Refresh Data">&#10227;</button>
         </div>
@@ -274,12 +289,13 @@
           <table>
             <thead>
               <tr>
+                <th>PIC</th>
                 <th>Nama</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="rsvp-rows">
-              <tr><td colspan="2">Belum ada data.</td></tr>
+              <tr><td colspan="3">Belum ada data.</td></tr>
             </tbody>
           </table>
         </div>
@@ -317,11 +333,75 @@
       var prevBtn = document.getElementById("prev-btn");
       var nextBtn = document.getElementById("next-btn");
       var statusFilterEl = document.getElementById("status-filter");
+      var picFilterEl = document.getElementById("pic-filter");
       var collectionName = "rsvps";
       var allItems = [];
       var pageSize = 12;
       var currentPage = 1;
       var activeFilter = "all";
+      var activePicFilter = "all";
+
+      function normalizePic(value) {
+        return String(value == null ? "" : value).trim();
+      }
+
+      function getUniquePics(items) {
+        var seen = {};
+        var list = [];
+        for (var i = 0; i < items.length; i++) {
+          var pic = normalizePic(items[i].pic);
+          if (!pic || seen[pic]) continue;
+          seen[pic] = true;
+          list.push(pic);
+        }
+        list.sort(function (a, b) {
+          return a.localeCompare(b, "id", { sensitivity: "base" });
+        });
+        return list;
+      }
+
+      function populatePicFilter(items) {
+        var selected = activePicFilter;
+        var pics = getUniquePics(items);
+        var hasEmpty = false;
+        for (var i = 0; i < items.length; i++) {
+          if (!normalizePic(items[i].pic)) {
+            hasEmpty = true;
+            break;
+          }
+        }
+
+        var html = "<option value=\"all\">Semua PIC</option>";
+        if (hasEmpty) {
+          html += "<option value=\"__empty__\">Tanpa PIC</option>";
+        }
+        for (var p = 0; p < pics.length; p++) {
+          html += "<option value=\"" + safeText(pics[p]) + "\">" + safeText(pics[p]) + "</option>";
+        }
+        picFilterEl.innerHTML = html;
+
+        var stillValid =
+          selected === "all" ||
+          selected === "__empty__" ||
+          pics.indexOf(selected) >= 0;
+        activePicFilter = stillValid ? selected : "all";
+        picFilterEl.value = activePicFilter;
+      }
+
+      function applyFilters(items) {
+        var filtered = items;
+        if (activeFilter === "yes" || activeFilter === "no") {
+          filtered = filtered.filter(function (x) { return x.attendance === activeFilter; });
+        }
+        if (activePicFilter === "__empty__") {
+          filtered = filtered.filter(function (x) { return !normalizePic(x.pic); });
+        } else if (activePicFilter !== "all") {
+          filtered = filtered.filter(function (x) {
+            return normalizePic(x.pic) === activePicFilter;
+          });
+        }
+        return filtered;
+      }
 
       function setStatus(text, isError) {
         statusEl.textContent = text || "";
@@ -349,12 +429,9 @@
       }
 
       function renderRows() {
-        var items = allItems;
-        if (activeFilter === "yes" || activeFilter === "no") {
-          items = items.filter(function (x) { return x.attendance === activeFilter; });
-        }
+        var items = applyFilters(allItems);
         if (!items.length) {
-          rowsEl.innerHTML = "<tr><td colspan=\"2\">Tidak ada data untuk filter ini.</td></tr>";
+          rowsEl.innerHTML = "<tr><td colspan=\"3\">Tidak ada data untuk filter ini.</td></tr>";
           countTotalEl.textContent = "0";
           countYesEl.textContent = "0";
           countNoEl.textContent = "0";
@@ -376,7 +453,9 @@
           var isYes = item.attendance === "yes";
           var statusText = isYes ? "Hadir" : "Tidak Hadir";
           var statusClass = isYes ? "status-text--yes" : "status-text--no";
+          var picText = normalizePic(item.pic) || "-";
           html += "<tr>"
+            + "<td class=\"col-pic\"><span class=\"pic-text\">" + safeText(picText) + "</span></td>"
             + "<td>" + safeText(item.name || "-") + "</td>"
             + "<td><span class=\"status-text " + statusClass + "\">" + statusText + "</span></td>"
             + "</tr>";
@@ -410,6 +489,7 @@
             });
             allItems = items;
             currentPage = 1;
+            populatePicFilter(items);
             renderRows();
             setStatus("Data dimuat: " + items.length + " tamu.");
           })
@@ -439,6 +519,11 @@
       });
       statusFilterEl.addEventListener("change", function () {
         activeFilter = this.value || "all";
+        currentPage = 1;
+        renderRows();
+      });
+      picFilterEl.addEventListener("change", function () {
+        activePicFilter = this.value || "all";
         currentPage = 1;
         renderRows();
       });
