@@ -340,6 +340,7 @@
       var currentPage = 1;
       var activeFilter = "all";
       var activePicFilter = "all";
+      var dbInstance = null;
 
       function normalizePic(value) {
         return String(value == null ? "" : value).trim();
@@ -420,12 +421,15 @@
         if (!window.firebase.apps || !window.firebase.apps.length) {
           window.firebase.initializeApp(firebaseConfig);
         }
-        var db = window.firebase.firestore();
-        db.settings({
-          experimentalAutoDetectLongPolling: true,
-          useFetchStreams: false
-        });
-        return db;
+        if (dbInstance) return dbInstance;
+        dbInstance = window.firebase.firestore();
+        try {
+          dbInstance.settings({
+            experimentalAutoDetectLongPolling: true,
+            useFetchStreams: false
+          });
+        } catch (_) {}
+        return dbInstance;
       }
 
       function renderRows() {

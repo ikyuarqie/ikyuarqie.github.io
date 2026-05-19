@@ -148,19 +148,23 @@
       }
     }
 
+    var firestoreDbInstance = null;
+
     function getFirestoreDb() {
       try {
         if (!window.firebase || !window.firebase.firestore) return null;
         if (!window.firebase.apps || !window.firebase.apps.length) {
           window.firebase.initializeApp(INVITE.firebaseConfig);
         }
-        var firestore = window.firebase.firestore();
-        // Improve compatibility for restrictive networks / Android WebView.
-        firestore.settings({
-          experimentalAutoDetectLongPolling: true,
-          useFetchStreams: false
-        });
-        return firestore;
+        if (firestoreDbInstance) return firestoreDbInstance;
+        firestoreDbInstance = window.firebase.firestore();
+        try {
+          firestoreDbInstance.settings({
+            experimentalAutoDetectLongPolling: true,
+            useFetchStreams: false
+          });
+        } catch (_) {}
+        return firestoreDbInstance;
       } catch (_) {
         return null;
       }

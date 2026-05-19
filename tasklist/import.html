@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Import — Task List</title>
+  <style>
+    :root {
+      --line: rgba(116, 141, 179, 0.25);
+      --text: #1f2b40;
+      --muted: #5d6d89;
+      --card-bg: rgba(255, 255, 255, 0.58);
+      --shadow: 0 16px 42px rgba(13, 30, 58, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 10% -10%, #dfe9ff 0%, transparent 60%),
+                  radial-gradient(1200px 500px at 100% 0%, #cfe0ff 0%, transparent 55%),
+                  #dbe7fb;
+    }
+    .shell {
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: min(100vw, 430px);
+      margin: 0 auto;
+      background-image: url("../pages/Background.jpg");
+      background-size: cover;
+      background-position: center bottom;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      border: 1px solid rgba(130, 154, 192, 0.35);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.72), var(--card-bg));
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(26, 48, 88, 0.12);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .view-head {
+      flex-shrink: 0;
+      padding: 6px 4px 14px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid rgba(130, 154, 192, 0.2);
+    }
+    .nav-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #18263d;
+    }
+    .sub {
+      margin: 8px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .view-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .field {
+      flex-shrink: 0;
+      margin-bottom: 12px;
+    }
+    .field-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #6c7c97;
+    }
+    .text-input,
+    .select-input,
+    .import-textarea {
+      width: 100%;
+      border: 1px solid rgba(130, 154, 192, 0.45);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.88);
+      color: #1f2b40;
+      outline: none;
+    }
+    .text-input,
+    .select-input {
+      height: 38px;
+      padding: 0 12px;
+    }
+    .select-input { cursor: pointer; }
+    .import-textarea {
+      flex: 1;
+      min-height: 120px;
+      resize: none;
+      padding: 12px;
+      line-height: 1.45;
+      font-family: inherit;
+    }
+    .textarea-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .hint {
+      margin: 0 0 8px;
+      font-size: 0.76rem;
+      color: #7b8ba6;
+    }
+    .preview {
+      flex-shrink: 0;
+      margin: 0 0 10px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .preview strong {
+      color: #18263d;
+    }
+    .actions {
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+    }
+    .actions .btn { flex: 1; }
+    .status {
+      flex-shrink: 0;
+      margin: 10px 0 0;
+      min-height: 1.2em;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .btn {
+      border: 1px solid rgba(130, 154, 192, 0.5);
+      border-radius: 999px;
+      height: 38px;
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1f2b40;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn--ghost { background: transparent; }
+    .btn--primary {
+      border-color: rgba(58, 109, 173, 0.55);
+      background: #3a6dad;
+      color: #fff;
+    }
+    .btn--primary:hover:not(:disabled) {
+      background: #2f5f99;
+      box-shadow: 0 6px 14px rgba(47, 95, 153, 0.25);
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(24, 37, 60, 0.14);
+    }
+    .btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .new-topic-row { display: none; margin-top: 8px; }
+    .new-topic-row.is-visible { display: block; }
+    @media (min-width: 820px) {
+      body { background: #e3ebf8; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel">
+      <header class="view-head">
+        <div class="nav-row">
+          <a href="index.html" class="btn btn--ghost">&larr; Task List</a>
+        </div>
+        <h1>Import</h1>
+        <p class="sub">Tempel daftar tugas · pisah dengan Enter atau <strong>;</strong></p>
+      </header>
+
+      <div class="view-body">
+        <div class="field">
+          <label class="field-label" for="topic-select">Topik</label>
+          <select id="topic-select" class="select-input">
+            <option value="">Memuat topik...</option>
+          </select>
+          <div id="new-topic-row" class="new-topic-row">
+            <input id="new-topic-input" class="text-input" type="text" placeholder="Nama topik baru" maxlength="60" style="margin-top:8px">
+          </div>
+        </div>
+
+        <div class="textarea-wrap field">
+          <label class="field-label" for="import-text">Isi tugas</label>
+          <p class="hint">Setiap baris atau teks setelah <code>;</code> menjadi satu tugas.</p>
+          <textarea id="import-text" class="import-textarea" placeholder="Contoh:&#10;Passport; Visa&#10;T-shirt x4&#10;Power bank"></textarea>
+        </div>
+
+        <p id="preview" class="preview"><strong>0</strong> tugas terdeteksi</p>
+
+        <div class="actions">
+          <button id="clear-btn" class="btn btn--ghost" type="button">Kosongkan</button>
+          <button id="import-btn" class="btn btn--primary" type="button" disabled>Import</button>
+        </div>
+
+        <p id="status" class="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    (function () {
+      var firebaseConfig = {
+        apiKey: "AIzaSyCKnkDiidx2T_J8mD9cFXzfiWCxwEWn4m4",
+        authDomain: "larasamaikyu.firebaseapp.com",
+        projectId: "larasamaikyu",
+        storageBucket: "larasamaikyu.firebasestorage.app",
+        messagingSenderId: "497756031939",
+        appId: "1:497756031939:web:f7a5f1d7636aa6db118b76"
+      };
+
+      var topicsCollection = "task_topics";
+      var tasksCollection = "tasks";
+      var NEW_TOPIC_VALUE = "__new__";
+
+      var topicSelectEl = document.getElementById("topic-select");
+      var newTopicRowEl = document.getElementById("new-topic-row");
+      var newTopicInputEl = document.getElementById("new-topic-input");
+      var importTextEl = document.getElementById("import-text");
+      var previewEl = document.getElementById("preview");
+      var importBtn = document.getElementById("import-btn");
+      var clearBtn = document.getElementById("clear-btn");
+      var statusEl = document.getElementById("status");
+
+      var topics = [];
+      var dbInstance = null;
+      var preselectKey = null;
+
+      try {
+        preselectKey = new URLSearchParams(window.location.search).get("topic");
+      } catch (_) {}
+
+      function setStatus(text, isError) {
+        statusEl.textContent = text || "";
+        statusEl.style.color = isError ? "#9a4f5a" : "#566681";
+      }
+
+      function normalizeText(value) {
+        return String(value == null ? "" : value).trim();
+      }
+
+      function makeTopicKey(name) {
+        var base = normalizeText(name)
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9\-]/g, "")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        return base || ("topik-" + Date.now());
+      }
+
+      function topicExists(key) {
+        for (var i = 0; i < topics.length; i++) {
+          if (topics[i].key === key) return true;
+        }
+        return false;
+      }
+
+      function initDb() {
+        if (!window.firebase || !window.firebase.firestore) return null;
+        if (!window.firebase.apps || !window.firebase.apps.length) {
+          window.firebase.initializeApp(firebaseConfig);
+        }
+        if (dbInstance) return dbInstance;
+        dbInstance = window.firebase.firestore();
+        try {
+          dbInstance.settings({
+            experimentalAutoDetectLongPolling: true,
+            useFetchStreams: false
+          });
+        } catch (_) {}
+        return dbInstance;
+      }
+
+      function parseImportLines(raw) {
+        var text = String(raw == null ? "" : raw)
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n")
+          .replace(/;/g, "\n");
+        var parts = text.split("\n");
+        var out = [];
+        for (var i = 0; i < parts.length; i++) {
+          var line = parts[i].trim();
+          if (!line) continue;
+          if (line.length > 200) line = line.slice(0, 200);
+          out.push(line);
+        }
+        return out;
+      }
+
+      function updatePreview() {
+        var lines = parseImportLines(importTextEl.value);
+        previewEl.innerHTML = "<strong>" + lines.length + "</strong> tugas terdeteksi";
+        importBtn.disabled = lines.length === 0 || !topicSelectEl.value;
+      }
+
+      function toggleNewTopicRow() {
+        var isNew = topicSelectEl.value === NEW_TOPIC_VALUE;
+        newTopicRowEl.classList.toggle("is-visible", isNew);
+        updatePreview();
+      }
+
+      function renderTopicSelect() {
+        var html = "";
+        if (!topics.length) {
+          html += "<option value=\"\">— Belum ada topik —</option>";
+        } else {
+          html += "<option value=\"\">— Pilih topik —</option>";
+          for (var i = 0; i < topics.length; i++) {
+            var t = topics[i];
+            html += "<option value=\"" + t.key + "\">" + escapeHtml(t.name) + "</option>";
+          }
+        }
+        html += "<option value=\"" + NEW_TOPIC_VALUE + "\">+ Topik baru...</option>";
+        topicSelectEl.innerHTML = html;
+
+        if (preselectKey) {
+          for (var j = 0; j < topics.length; j++) {
+            if (topics[j].key === preselectKey) {
+              topicSelectEl.value = preselectKey;
+              break;
+            }
+          }
+        }
+        toggleNewTopicRow();
+        updatePreview();
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function loadTopics() {
+        var db = initDb();
+        if (!db) {
+          setStatus("Firebase SDK tidak tersedia.", true);
+          return Promise.reject();
+        }
+        setStatus("Memuat topik...");
+        return db.collection(topicsCollection).orderBy("createdAt", "desc").get()
+          .then(function (snapshot) {
+            topics = [];
+            snapshot.forEach(function (doc) {
+              var data = doc.data() || {};
+              topics.push({
+                id: doc.id,
+                name: data.name || "",
+                key: data.key || ""
+              });
+            });
+            renderTopicSelect();
+            setStatus("");
+          })
+          .catch(function (err) {
+            var code = err && err.code ? String(err.code) : "";
+            if (code === "permission-denied") {
+              setStatus("Firestore Rules menolak akses.", true);
+            } else {
+              setStatus("Gagal memuat topik.", true);
+            }
+          });
+      }
+
+      function resolveTopic(db) {
+        var selected = topicSelectEl.value;
+        if (!selected) {
+          return Promise.reject(new Error("no-topic"));
+        }
+        if (selected !== NEW_TOPIC_VALUE) {
+          for (var i = 0; i < topics.length; i++) {
+            if (topics[i].key === selected) {
+              return Promise.resolve({ key: topics[i].key, name: topics[i].name });
+            }
+          }
+          return Promise.reject(new Error("topic-missing"));
+        }
+
+        var name = normalizeText(newTopicInputEl.value);
+        if (!name) {
+          return Promise.reject(new Error("no-name"));
+        }
+        var key = makeTopicKey(name);
+        if (topicExists(key)) {
+          return Promise.reject(new Error("topic-exists"));
+        }
+
+        return db.collection(topicsCollection).add({
+          name: name,
+          key: key,
+          createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function () {
+          topics.push({ id: "", name: name, key: key });
+          return { key: key, name: name };
+        });
+      }
+
+      function runImport() {
+        var lines = parseImportLines(importTextEl.value);
+        if (!lines.length) {
+          setStatus("Tidak ada tugas untuk diimpor.", true);
+          return;
+        }
+        if (!topicSelectEl.value) {
+          setStatus("Pilih topik dulu.", true);
+          return;
+        }
+        if (topicSelectEl.value === NEW_TOPIC_VALUE && !normalizeText(newTopicInputEl.value)) {
+          setStatus("Nama topik baru wajib diisi.", true);
+          newTopicInputEl.focus();
+          return;
+        }
+
+        var db = initDb();
+        if (!db) return;
+
+        importBtn.disabled = true;
+        clearBtn.disabled = true;
+        setStatus("Mengimpor " + lines.length + " tugas...");
+
+        resolveTopic(db)
+          .then(function (topic) {
+            var chain = Promise.resolve();
+            for (var j = 0; j < lines.length; j++) {
+              (function (text, order) {
+                chain = chain.then(function () {
+                  return db.collection(tasksCollection).add({
+                    topic: topic.key,
+                    text: text,
+                    done: false,
+                    sortOrder: order,
+                    createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                });
+              })(lines[j], j * 10);
+            }
+            return chain.then(function () {
+              return topic;
+            });
+          })
+          .then(function (topic) {
+            importTextEl.value = "";
+            updatePreview();
+            setStatus("Berhasil mengimpor " + lines.length + " tugas ke \"" + topic.name + "\".");
+            if (window.confirm("Buka daftar tugas \"" + topic.name + "\"?")) {
+              window.location.href = "index.html?topic=" + encodeURIComponent(topic.key);
+            }
+          })
+          .catch(function (err) {
+            var msg = err && err.message ? err.message : "";
+            if (msg === "no-topic") setStatus("Pilih topik dulu.", true);
+            else if (msg === "no-name") setStatus("Nama topik baru wajib diisi.", true);
+            else if (msg === "topic-exists") setStatus("Topik dengan nama serupa sudah ada.", true);
+            else setStatus("Gagal mengimpor tugas.", true);
+          })
+          .finally(function () {
+            clearBtn.disabled = false;
+            updatePreview();
+          });
+      }
+
+      topicSelectEl.addEventListener("change", toggleNewTopicRow);
+      newTopicInputEl.addEventListener("input", updatePreview);
+      importTextEl.addEventListener("input", updatePreview);
+      importBtn.addEventListener("click", runImport);
+      clearBtn.addEventListener("click", function () {
+        importTextEl.value = "";
+        updatePreview();
+        importTextEl.focus();
+      });
+
+      loadTopics();
+    })();
+  </script>
+</body>
+</html>

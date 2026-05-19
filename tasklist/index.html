@@ -1,0 +1,1431 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task List</title>
+  <style>
+    :root {
+      --line: rgba(116, 141, 179, 0.25);
+      --text: #1f2b40;
+      --muted: #5d6d89;
+      --done: #1f8f5f;
+      --card-bg: rgba(255, 255, 255, 0.58);
+      --shadow: 0 16px 42px rgba(13, 30, 58, 0.18);
+      --swipe-actions-w: 152px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 10% -10%, #dfe9ff 0%, transparent 60%),
+                  radial-gradient(1200px 500px at 100% 0%, #cfe0ff 0%, transparent 55%),
+                  #dbe7fb;
+    }
+    .shell {
+      position: relative;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: min(100vw, 430px);
+      margin: 0 auto;
+      background-image: url("../pages/Background.jpg");
+      background-size: cover;
+      background-position: center bottom;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 16px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      border: 1px solid rgba(130, 154, 192, 0.35);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.72), var(--card-bg));
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(26, 48, 88, 0.12);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .view.is-active { display: flex; }
+    .view-head {
+      flex-shrink: 0;
+      padding: 6px 4px 14px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid rgba(130, 154, 192, 0.2);
+    }
+    .view-head h1,
+    .view-head .topic-title {
+      margin: 0;
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      color: #18263d;
+    }
+    .view-head--topics .sub {
+      margin: 8px 0 0;
+    }
+    .sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .view-head--tasks .topic-title {
+      margin-top: 4px;
+      padding: 0 8px;
+      font-size: 1.28rem;
+      word-break: break-word;
+    }
+    .tasks-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .btn--back {
+      min-width: auto;
+      padding: 0 14px;
+    }
+    .btn {
+      border: 1px solid rgba(130, 154, 192, 0.5);
+      border-radius: 999px;
+      height: 33px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1f2b40;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn--icon {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .btn--icon.btn--add {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1;
+      color: #3a6dad;
+    }
+    .btn--icon.btn--danger {
+      font-size: 1.05rem;
+    }
+    .btn--ghost {
+      background: transparent;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(24, 37, 60, 0.14);
+    }
+    .btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .btn--danger {
+      border-color: rgba(196, 71, 93, 0.55);
+      color: #9e2d42;
+      background: rgba(255, 245, 247, 0.95);
+    }
+    .btn--danger:hover:not(:disabled) {
+      background: #ffe8ec;
+      box-shadow: 0 6px 14px rgba(158, 45, 66, 0.16);
+    }
+    .form-row .btn {
+      flex-shrink: 0;
+    }
+    .toolbar {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    a.btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .status {
+      margin: 10px 0 0;
+      min-height: 1.2em;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .form-row {
+      margin-top: 8px;
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+    }
+    .view-body .summary {
+      margin-top: 0;
+    }
+    .text-input {
+      flex: 1;
+      border: 1px solid rgba(130, 154, 192, 0.45);
+      border-radius: 12px;
+      height: 38px;
+      padding: 0 12px;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.88);
+      color: #1f2b40;
+      outline: none;
+    }
+    .list-wrap {
+      margin-top: 10px;
+      border: 1px solid rgba(130, 154, 192, 0.28);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.8);
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .list-scroll {
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      flex: 1;
+      min-height: 0;
+      padding: 8px;
+    }
+    .item-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .swipe-row {
+      position: relative;
+      margin-bottom: 8px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #d5e0f2;
+      isolation: isolate;
+    }
+    .swipe-row:last-child { margin-bottom: 0; }
+    .swipe-actions {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: var(--swipe-actions-w);
+      display: flex;
+      z-index: 0;
+    }
+    .swipe-action {
+      flex: 1;
+      border: 0;
+      min-width: 0;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #ffffff;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .swipe-action--edit {
+      background-color: #3a6dad;
+    }
+    .swipe-action--delete {
+      background-color: #c4475d;
+    }
+    .swipe-action:active {
+      filter: brightness(0.92);
+    }
+    .swipe-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: #ffffff;
+      border: 1px solid rgba(130, 154, 192, 0.28);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(33, 53, 90, 0.08);
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      touch-action: pan-y;
+      will-change: transform;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .swipe-content:active {
+      cursor: grabbing;
+    }
+    .swipe-row.is-dragging .swipe-content {
+      transition: none;
+    }
+    .swipe-row.is-open .swipe-content {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+      box-shadow: -4px 0 12px rgba(33, 53, 90, 0.08);
+    }
+    .topic-open {
+      flex: 1;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1f2b40;
+      cursor: pointer;
+      padding: 0;
+      user-select: none;
+    }
+    .swipe-content .task-check {
+      cursor: pointer;
+    }
+    .topic-meta {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .swipe-row.is-done .task-text {
+      color: #6c7c97;
+      text-decoration: line-through;
+    }
+    .task-row .swipe-content {
+      cursor: pointer;
+    }
+    .topic-row .swipe-content {
+      cursor: pointer;
+    }
+    .task-check {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--done);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .task-text {
+      flex: 1;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .task-drag-handle {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      margin: -4px 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #8a9bb5;
+      cursor: grab;
+      touch-action: none;
+      font-size: 1.05rem;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: -0.12em;
+    }
+    .task-drag-handle:active {
+      cursor: grabbing;
+      background: rgba(58, 109, 173, 0.12);
+      color: #3a6dad;
+    }
+    .swipe-row.is-reordering {
+      opacity: 0.88;
+      z-index: 4;
+    }
+    .swipe-row.is-reordering .swipe-content {
+      box-shadow: 0 8px 22px rgba(33, 53, 90, 0.18);
+    }
+    .swipe-row.is-drop-before .swipe-content {
+      box-shadow: inset 0 3px 0 0 #3a6dad;
+    }
+    .summary {
+      margin-top: 10px;
+      flex-shrink: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .summary-item {
+      border: 1px solid rgba(130, 154, 192, 0.26);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.62);
+      text-align: center;
+      padding: 8px 6px;
+    }
+    .summary-label {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6c7c97;
+    }
+    .summary-value {
+      display: block;
+      margin-top: 2px;
+      font-weight: 700;
+      font-size: 1.02rem;
+      color: #18263d;
+    }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 24px 12px;
+    }
+    .swipe-hint {
+      margin: 6px 0 0;
+      flex-shrink: 0;
+      text-align: center;
+      font-size: 0.74rem;
+      color: #7b8ba6;
+      letter-spacing: 0.02em;
+    }
+    .view-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    @media (min-width: 820px) {
+      body { background: #e3ebf8; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel">
+      <!-- Topik -->
+      <div id="view-topics" class="view is-active">
+        <div class="view-head view-head--topics">
+        <h1>Topik</h1>
+        <p class="sub">Kelola daftar topik</p>
+
+        <div class="toolbar">
+          <a href="import.html" class="btn btn--ghost">Import</a>
+          <button id="reload-topics-btn" class="btn btn--icon" type="button" title="Refresh">&#10227;</button>
+        </div>
+        </div>
+
+        <div class="view-body">
+        <div class="form-row">
+          <input id="topic-input" class="text-input" type="text" placeholder="Nama topik baru" maxlength="60">
+          <button id="add-topic-btn" class="btn" type="button">Tambah</button>
+        </div>
+
+        <p id="status-topics" class="status"></p>
+        <p class="swipe-hint">Geser atau seret kiri untuk Ubah / Hapus</p>
+
+        <div class="list-wrap">
+          <div class="list-scroll">
+            <ul id="topic-list" class="item-list">
+              <li class="empty">Belum ada topik.</li>
+            </ul>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- Tugas dalam topik -->
+      <div id="view-tasks" class="view">
+        <div class="view-head view-head--tasks">
+          <div class="tasks-nav">
+            <button id="back-btn" class="btn btn--ghost btn--back" type="button" aria-label="Kembali ke topik">&larr; Topik</button>
+          </div>
+          <h2 id="active-topic-title" class="topic-title">Topik</h2>
+        </div>
+
+        <div class="view-body">
+        <div class="summary">
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span id="count-total" class="summary-value">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Selesai</span>
+            <span id="count-done" class="summary-value">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Belum</span>
+            <span id="count-open" class="summary-value">0</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <input id="task-input" class="text-input" type="text" placeholder="Tambah tugas..." maxlength="200">
+          <button id="add-task-btn" class="btn btn--icon btn--add" type="button" title="Tambah" aria-label="Tambah">+</button>
+          <button id="delete-all-tasks-btn" class="btn btn--icon btn--danger" type="button" title="Hapus semua" aria-label="Hapus semua" disabled>&#128465;</button>
+        </div>
+
+        <p id="status-tasks" class="status"></p>
+        <p class="swipe-hint">Klik baris untuk centang · geser kiri Ubah/Hapus · pegang &#8942;&#8942; untuk urutkan</p>
+
+        <div class="list-wrap">
+          <div class="list-scroll">
+            <ul id="task-list" class="item-list">
+              <li class="empty">Belum ada tugas.</li>
+            </ul>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    (function () {
+      var firebaseConfig = {
+        apiKey: "AIzaSyCKnkDiidx2T_J8mD9cFXzfiWCxwEWn4m4",
+        authDomain: "larasamaikyu.firebaseapp.com",
+        projectId: "larasamaikyu",
+        storageBucket: "larasamaikyu.firebasestorage.app",
+        messagingSenderId: "497756031939",
+        appId: "1:497756031939:web:f7a5f1d7636aa6db118b76"
+      };
+
+      var topicsCollection = "task_topics";
+      var tasksCollection = "tasks";
+
+      var viewTopics = document.getElementById("view-topics");
+      var viewTasks = document.getElementById("view-tasks");
+      var topicListEl = document.getElementById("topic-list");
+      var topicInputEl = document.getElementById("topic-input");
+      var addTopicBtn = document.getElementById("add-topic-btn");
+      var reloadTopicsBtn = document.getElementById("reload-topics-btn");
+      var statusTopicsEl = document.getElementById("status-topics");
+
+      var taskListEl = document.getElementById("task-list");
+      var taskInputEl = document.getElementById("task-input");
+      var addTaskBtn = document.getElementById("add-task-btn");
+      var deleteAllTasksBtn = document.getElementById("delete-all-tasks-btn");
+      var statusTasksEl = document.getElementById("status-tasks");
+      var backBtn = document.getElementById("back-btn");
+      var activeTopicTitleEl = document.getElementById("active-topic-title");
+      var countTotalEl = document.getElementById("count-total");
+      var countDoneEl = document.getElementById("count-done");
+      var countOpenEl = document.getElementById("count-open");
+
+      var topics = [];
+      var tasks = [];
+      var activeTopic = null;
+      var dbInstance = null;
+
+      function setStatus(el, text, isError) {
+        el.textContent = text || "";
+        el.style.color = isError ? "#9a4f5a" : "#566681";
+      }
+
+      function safeText(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function normalizeText(value) {
+        return String(value == null ? "" : value).trim();
+      }
+
+      function makeTopicKey(name) {
+        var base = normalizeText(name)
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9\-]/g, "")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        return base || ("topik-" + Date.now());
+      }
+
+      function topicExists(key) {
+        for (var i = 0; i < topics.length; i++) {
+          if (topics[i].key === key) return true;
+        }
+        return false;
+      }
+
+      function countTasksForTopic(key) {
+        var total = 0;
+        var done = 0;
+        for (var i = 0; i < tasks.length; i++) {
+          if (tasks[i].topic !== key) continue;
+          total += 1;
+          if (tasks[i].done) done += 1;
+        }
+        return { total: total, done: done, open: total - done };
+      }
+
+      function compareTasks(a, b) {
+        if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+        var oa = typeof a.sortOrder === "number" ? a.sortOrder : 2147483647;
+        var ob = typeof b.sortOrder === "number" ? b.sortOrder : 2147483647;
+        if (oa !== ob) return oa - ob;
+        var ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+        var tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+        return tb - ta;
+      }
+
+      function getTopicTasks(topicKey) {
+        var list = [];
+        for (var i = 0; i < tasks.length; i++) {
+          if (tasks[i].topic === topicKey) list.push(tasks[i]);
+        }
+        list.sort(compareTasks);
+        return list;
+      }
+
+      function maxSortOrder(topicKey, done) {
+        var max = -1;
+        for (var i = 0; i < tasks.length; i++) {
+          var t = tasks[i];
+          if (t.topic !== topicKey || !!t.done !== !!done) continue;
+          if (typeof t.sortOrder === "number" && t.sortOrder > max) max = t.sortOrder;
+        }
+        return max;
+      }
+
+      function initDb() {
+        if (!window.firebase || !window.firebase.firestore) return null;
+        if (!window.firebase.apps || !window.firebase.apps.length) {
+          window.firebase.initializeApp(firebaseConfig);
+        }
+        if (dbInstance) return dbInstance;
+        dbInstance = window.firebase.firestore();
+        try {
+          dbInstance.settings({
+            experimentalAutoDetectLongPolling: true,
+            useFetchStreams: false
+          });
+        } catch (_) {}
+        return dbInstance;
+      }
+
+      function showTopicsView() {
+        viewTopics.classList.add("is-active");
+        viewTasks.classList.remove("is-active");
+        activeTopic = null;
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      }
+
+      function showTasksView(topic) {
+        activeTopic = topic;
+        viewTopics.classList.remove("is-active");
+        viewTasks.classList.add("is-active");
+        activeTopicTitleEl.textContent = topic.name;
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, "", window.location.pathname + "?topic=" + encodeURIComponent(topic.key));
+        }
+        renderTasks();
+      }
+
+      function renderTopics() {
+        if (!topics.length) {
+          topicListEl.innerHTML = "<li class=\"empty\">Belum ada topik.</li>";
+          return;
+        }
+        var html = "";
+        for (var i = 0; i < topics.length; i++) {
+          var t = topics[i];
+          var c = countTasksForTopic(t.key);
+          html += "<li class=\"swipe-row topic-row\" data-id=\"" + safeText(t.id) + "\" data-key=\"" + safeText(t.key) + "\">"
+            + "<div class=\"swipe-actions\">"
+            + "<button class=\"swipe-action swipe-action--edit topic-edit\" type=\"button\">Ubah</button>"
+            + "<button class=\"swipe-action swipe-action--delete topic-delete\" type=\"button\">Hapus</button>"
+            + "</div>"
+            + "<div class=\"swipe-content\">"
+            + "<button class=\"topic-open\" type=\"button\">"
+            + safeText(t.name)
+            + "<span class=\"topic-meta\">" + c.done + "/" + c.total + " selesai</span>"
+            + "</button>"
+            + "</div>"
+            + "</li>";
+        }
+        topicListEl.innerHTML = html;
+      }
+
+      function renderTasks() {
+        if (!activeTopic) return;
+        var topicTasks = getTopicTasks(activeTopic.key);
+
+        var done = 0;
+        for (var d = 0; d < topicTasks.length; d++) {
+          if (topicTasks[d].done) done += 1;
+        }
+        countTotalEl.textContent = String(topicTasks.length);
+        countDoneEl.textContent = String(done);
+        countOpenEl.textContent = String(topicTasks.length - done);
+
+        if (deleteAllTasksBtn) {
+          deleteAllTasksBtn.disabled = topicTasks.length === 0;
+        }
+
+        if (!topicTasks.length) {
+          taskListEl.innerHTML = "<li class=\"empty\">Belum ada tugas.</li>";
+          return;
+        }
+
+        var html = "";
+        for (var j = 0; j < topicTasks.length; j++) {
+          var item = topicTasks[j];
+          html += "<li class=\"swipe-row task-row" + (item.done ? " is-done" : "") + "\" data-id=\"" + safeText(item.id) + "\">"
+            + "<div class=\"swipe-actions\">"
+            + "<button class=\"swipe-action swipe-action--edit task-edit\" type=\"button\">Ubah</button>"
+            + "<button class=\"swipe-action swipe-action--delete task-delete\" type=\"button\">Hapus</button>"
+            + "</div>"
+            + "<div class=\"swipe-content\">"
+            + "<button type=\"button\" class=\"task-drag-handle\" aria-label=\"Geser untuk urutkan\" title=\"Geser naik/bawah\">&#8942;&#8942;</button>"
+            + "<input class=\"task-check\" type=\"checkbox\"" + (item.done ? " checked" : "") + " aria-label=\"Selesai\">"
+            + "<span class=\"task-text\">" + safeText(item.text || "-") + "</span>"
+            + "</div>"
+            + "</li>";
+        }
+        taskListEl.innerHTML = html;
+      }
+
+      function loadTopics(db) {
+        return db.collection(topicsCollection)
+          .orderBy("createdAt", "asc")
+          .get()
+          .then(function (snapshot) {
+            var list = [];
+            snapshot.forEach(function (doc) {
+              var data = doc.data() || {};
+              list.push({
+                id: doc.id,
+                key: data.key || doc.id,
+                name: data.name || doc.id
+              });
+            });
+            topics = list;
+            renderTopics();
+          });
+      }
+
+      function loadTasks(db) {
+        return db.collection(tasksCollection)
+          .orderBy("createdAt", "desc")
+          .get()
+          .then(function (snapshot) {
+            var list = [];
+            snapshot.forEach(function (doc) {
+              var data = doc.data() || {};
+              list.push({
+                id: doc.id,
+                topic: data.topic || "",
+                text: data.text || "",
+                done: !!data.done,
+                sortOrder: typeof data.sortOrder === "number" ? data.sortOrder : null,
+                createdAt: data.createdAt || null
+              });
+            });
+            tasks = list;
+            if (activeTopic) renderTasks();
+            else renderTopics();
+          });
+      }
+
+      function loadAllTopics() {
+        var db = initDb();
+        if (!db) {
+          setStatus(statusTopicsEl, "Firebase SDK tidak tersedia.", true);
+          return;
+        }
+        reloadTopicsBtn.disabled = true;
+        addTopicBtn.disabled = true;
+        setStatus(statusTopicsEl, "Memuat topik...");
+
+        return Promise.all([loadTopics(db), loadTasks(db)])
+          .then(function () {
+            setStatus(statusTopicsEl, "Topik dimuat.");
+            return handleUrlParamsAfterLoad();
+          })
+          .catch(function (err) {
+            var code = err && err.code ? String(err.code) : "";
+            if (code === "permission-denied") {
+              setStatus(statusTopicsEl, "Firestore Rules menolak akses.", true);
+            } else {
+              setStatus(statusTopicsEl, "Gagal memuat topik.", true);
+            }
+          })
+          .finally(function () {
+            reloadTopicsBtn.disabled = false;
+            addTopicBtn.disabled = false;
+          });
+      }
+
+      function loadTasksOnly() {
+        var db = initDb();
+        if (!db || !activeTopic) return;
+        addTaskBtn.disabled = true;
+        setStatus(statusTasksEl, "Memuat tugas...");
+
+        db.collection(tasksCollection)
+          .where("topic", "==", activeTopic.key)
+          .orderBy("createdAt", "desc")
+          .get()
+          .then(function (snapshot) {
+            var list = tasks.filter(function (t) { return t.topic !== activeTopic.key; });
+            snapshot.forEach(function (doc) {
+              var data = doc.data() || {};
+              list.push({
+                id: doc.id,
+                topic: data.topic || "",
+                text: data.text || "",
+                done: !!data.done,
+                sortOrder: typeof data.sortOrder === "number" ? data.sortOrder : null,
+                createdAt: data.createdAt || null
+              });
+            });
+            tasks = list;
+            renderTasks();
+            setStatus(statusTasksEl, "Tugas dimuat.");
+          })
+          .catch(function () {
+            return loadTasks(db).then(function () {
+              renderTasks();
+              setStatus(statusTasksEl, "Tugas dimuat.");
+            });
+          })
+          .finally(function () {
+            addTaskBtn.disabled = false;
+          });
+      }
+
+      function addTopic() {
+        var name = normalizeText(topicInputEl.value);
+        if (!name) {
+          setStatus(statusTopicsEl, "Nama topik wajib diisi.", true);
+          topicInputEl.focus();
+          return;
+        }
+        var db = initDb();
+        if (!db) return;
+        var key = makeTopicKey(name);
+        if (topicExists(key)) {
+          setStatus(statusTopicsEl, "Topik sudah ada.", true);
+          return;
+        }
+
+        addTopicBtn.disabled = true;
+        db.collection(topicsCollection).add({
+          name: name,
+          key: key,
+          createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        })
+          .then(function () {
+            topicInputEl.value = "";
+            setStatus(statusTopicsEl, "Topik ditambahkan.");
+            return loadTopics(db);
+          })
+          .then(function () { return loadTasks(db); })
+          .catch(function () {
+            setStatus(statusTopicsEl, "Gagal menambah topik.", true);
+          })
+          .finally(function () {
+            addTopicBtn.disabled = false;
+          });
+      }
+
+      function updateTopic(topicId, newName) {
+        var name = normalizeText(newName);
+        if (!name) return;
+        var db = initDb();
+        if (!db) return;
+        var newKey = makeTopicKey(name);
+        var topic = null;
+        for (var i = 0; i < topics.length; i++) {
+          if (topics[i].id === topicId) { topic = topics[i]; break; }
+        }
+        if (!topic) return;
+        if (newKey !== topic.key && topicExists(newKey)) {
+          setStatus(statusTopicsEl, "Nama topik bentrok.", true);
+          return;
+        }
+
+        db.collection(topicsCollection).doc(topicId).update({ name: name, key: newKey })
+          .then(function () {
+            var batch = db.batch();
+            var related = tasks.filter(function (t) { return t.topic === topic.key; });
+            for (var j = 0; j < related.length; j++) {
+              batch.update(db.collection(tasksCollection).doc(related[j].id), { topic: newKey });
+            }
+            return batch.commit().catch(function () { return null; });
+          })
+          .then(function () {
+            if (activeTopic && activeTopic.id === topicId) {
+              activeTopic.name = name;
+              activeTopic.key = newKey;
+              activeTopicTitleEl.textContent = name;
+            }
+            setStatus(statusTopicsEl, "Topik diperbarui.");
+            return loadAllTopics();
+          })
+          .catch(function () {
+            setStatus(statusTopicsEl, "Gagal mengubah topik.", true);
+          });
+      }
+
+      function deleteTopic(topicId, topicKey) {
+        if (!window.confirm("Hapus topik ini beserta semua tugasnya?")) return;
+        var db = initDb();
+        if (!db) return;
+
+        var related = tasks.filter(function (t) { return t.topic === topicKey; });
+        var batch = db.batch();
+        for (var i = 0; i < related.length; i++) {
+          batch.delete(db.collection(tasksCollection).doc(related[i].id));
+        }
+        batch.delete(db.collection(topicsCollection).doc(topicId));
+
+        batch.commit()
+          .then(function () {
+            if (activeTopic && activeTopic.id === topicId) showTopicsView();
+            setStatus(statusTopicsEl, "Topik dihapus.");
+            loadAllTopics();
+          })
+          .catch(function () {
+            setStatus(statusTopicsEl, "Gagal menghapus topik.", true);
+          });
+      }
+
+      function addTask() {
+        if (!activeTopic) return;
+        var text = normalizeText(taskInputEl.value);
+        if (!text) {
+          setStatus(statusTasksEl, "Tugas wajib diisi.", true);
+          taskInputEl.focus();
+          return;
+        }
+        var db = initDb();
+        if (!db) return;
+
+        addTaskBtn.disabled = true;
+        db.collection(tasksCollection).add({
+          topic: activeTopic.key,
+          text: text,
+          done: false,
+          sortOrder: maxSortOrder(activeTopic.key, false) + 10,
+          createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        })
+          .then(function () {
+            taskInputEl.value = "";
+            setStatus(statusTasksEl, "Tugas ditambahkan.");
+            return loadTasks(db);
+          })
+          .then(function () { renderTopics(); })
+          .catch(function () {
+            setStatus(statusTasksEl, "Gagal menambah tugas.", true);
+          })
+          .finally(function () {
+            addTaskBtn.disabled = false;
+          });
+      }
+
+      function updateTask(taskId, newText) {
+        var text = normalizeText(newText);
+        if (!text) return;
+        var db = initDb();
+        if (!db) return;
+        db.collection(tasksCollection).doc(taskId).update({
+          text: text,
+          updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        })
+          .then(function () {
+            for (var i = 0; i < tasks.length; i++) {
+              if (tasks[i].id === taskId) {
+                tasks[i].text = text;
+                break;
+              }
+            }
+            renderTasks();
+            setStatus(statusTasksEl, "Tugas diperbarui.");
+          })
+          .catch(function () {
+            setStatus(statusTasksEl, "Gagal mengubah tugas.", true);
+          });
+      }
+
+      function toggleTask(taskId, done) {
+        var db = initDb();
+        if (!db) return;
+        db.collection(tasksCollection).doc(taskId).update({
+          done: !!done,
+          updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        })
+          .then(function () {
+            for (var i = 0; i < tasks.length; i++) {
+              if (tasks[i].id === taskId) {
+                tasks[i].done = !!done;
+                break;
+              }
+            }
+            renderTasks();
+            renderTopics();
+          })
+          .catch(function () {
+            setStatus(statusTasksEl, "Gagal mengubah status.", true);
+          });
+      }
+
+      function deleteTask(taskId) {
+        var db = initDb();
+        if (!db) return;
+        db.collection(tasksCollection).doc(taskId).delete()
+          .then(function () {
+            tasks = tasks.filter(function (t) { return t.id !== taskId; });
+            renderTasks();
+            renderTopics();
+            setStatus(statusTasksEl, "Tugas dihapus.");
+          })
+          .catch(function () {
+            setStatus(statusTasksEl, "Gagal menghapus tugas.", true);
+          });
+      }
+
+      function deleteAllTasks() {
+        if (!activeTopic) return;
+        var topicKey = activeTopic.key;
+        var topicTasks = tasks.filter(function (t) { return t.topic === topicKey; });
+        if (!topicTasks.length) return;
+
+        var msg = "Hapus semua " + topicTasks.length + " tugas di \"" + activeTopic.name + "\"?";
+        if (!window.confirm(msg)) return;
+
+        var db = initDb();
+        if (!db) return;
+
+        deleteAllTasksBtn.disabled = true;
+        addTaskBtn.disabled = true;
+        setStatus(statusTasksEl, "Menghapus semua tugas...");
+
+        var batch = db.batch();
+        for (var i = 0; i < topicTasks.length; i++) {
+          batch.delete(db.collection(tasksCollection).doc(topicTasks[i].id));
+        }
+
+        batch.commit()
+          .then(function () {
+            tasks = tasks.filter(function (t) { return t.topic !== topicKey; });
+            renderTasks();
+            renderTopics();
+            setStatus(statusTasksEl, "Semua tugas dihapus.");
+          })
+          .catch(function () {
+            setStatus(statusTasksEl, "Gagal menghapus semua tugas.", true);
+          })
+          .finally(function () {
+            addTaskBtn.disabled = false;
+            renderTasks();
+          });
+      }
+
+      function openTopicByKey(key) {
+        for (var i = 0; i < topics.length; i++) {
+          if (topics[i].key === key) {
+            showTasksView(topics[i]);
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function handleUrlParamsAfterLoad() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var topicKey = params.get("topic");
+          if (topicKey) openTopicByKey(topicKey);
+        } catch (_) {}
+        return Promise.resolve();
+      }
+
+      var SWIPE_ACTION_WIDTH = 152;
+
+      function getSwipeTx(row) {
+        var content = row.querySelector(".swipe-content");
+        if (!content) return 0;
+        var m = (content.style.transform || "").match(/translateX\((-?\d+(?:\.\d+)?)px\)/);
+        return m ? parseFloat(m[1]) : 0;
+      }
+
+      function setSwipeTx(row, tx) {
+        var content = row.querySelector(".swipe-content");
+        if (content) content.style.transform = "translateX(" + tx + "px)";
+      }
+
+      function closeSwipeRow(row) {
+        if (!row) return;
+        setSwipeTx(row, 0);
+        row.classList.remove("is-open");
+      }
+
+      function closeAllSwipeRows(root) {
+        var open = root.querySelectorAll(".swipe-row.is-open");
+        for (var i = 0; i < open.length; i++) closeSwipeRow(open[i]);
+      }
+
+      function openSwipeRow(row) {
+        closeAllSwipeRows(row.parentElement);
+        setSwipeTx(row, -SWIPE_ACTION_WIDTH);
+        row.classList.add("is-open");
+      }
+
+      function initSwipeList(listEl) {
+        var drag = null;
+        var suppressRowClick = false;
+
+        function shouldIgnore(target) {
+          return !!(target.closest(".swipe-action") || target.closest(".task-check") || target.closest(".task-drag-handle"));
+        }
+
+        function moveDrag(clientX, clientY) {
+          if (!drag) return;
+          var dx = clientX - drag.startX;
+          var dy = clientY - drag.startY;
+          if (drag.locked === null) {
+            if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+            drag.locked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+            if (drag.locked === "x") {
+              closeAllSwipeRows(listEl);
+              drag.row.classList.add("is-dragging");
+            }
+          }
+          if (drag.locked === "y") {
+            drag.row.classList.remove("is-dragging");
+            drag = null;
+            return;
+          }
+          var next = drag.startTx + dx;
+          if (next > 0) next = 0;
+          if (next < -SWIPE_ACTION_WIDTH) next = -SWIPE_ACTION_WIDTH;
+          setSwipeTx(drag.row, next);
+        }
+
+        function endDrag() {
+          if (!drag) return;
+          var row = drag.row;
+          var wasHorizontal = drag.locked === "x";
+          row.classList.remove("is-dragging");
+          var tx = getSwipeTx(row);
+          if (tx < -SWIPE_ACTION_WIDTH * 0.35) openSwipeRow(row);
+          else closeSwipeRow(row);
+          if (wasHorizontal && Math.abs(tx) > 8) suppressRowClick = true;
+          drag = null;
+        }
+
+        function onPointerMove(e) {
+          if (!drag) return;
+          moveDrag(e.clientX, e.clientY);
+          if (drag && drag.locked === "x") e.preventDefault();
+        }
+
+        function onPointerUp() {
+          endDrag();
+          document.removeEventListener("pointermove", onPointerMove);
+          document.removeEventListener("pointerup", onPointerUp);
+          document.removeEventListener("pointercancel", onPointerUp);
+        }
+
+        listEl.addEventListener("pointerdown", function (e) {
+          if (e.button !== 0) return;
+          if (shouldIgnore(e.target)) return;
+          var row = e.target.closest(".swipe-row");
+          if (!row) return;
+
+          drag = {
+            row: row,
+            startX: e.clientX,
+            startY: e.clientY,
+            startTx: getSwipeTx(row),
+            locked: null,
+            moved: false
+          };
+
+          document.addEventListener("pointermove", onPointerMove);
+          document.addEventListener("pointerup", onPointerUp);
+          document.addEventListener("pointercancel", onPointerUp);
+        });
+
+        listEl.addEventListener("click", function (e) {
+          if (!suppressRowClick) return;
+          suppressRowClick = false;
+          if (e.target.closest(".swipe-action")) return;
+          e.preventDefault();
+          e.stopPropagation();
+        }, true);
+      }
+
+      function initTaskReorderList(listEl) {
+        var reorder = null;
+
+        function getTaskRows() {
+          return Array.prototype.slice.call(listEl.querySelectorAll(".task-row"));
+        }
+
+        function getGroupRows(done) {
+          return getTaskRows().filter(function (row) {
+            return row.classList.contains("is-done") === !!done;
+          });
+        }
+
+        function clearDropMarkers() {
+          var rows = getTaskRows();
+          for (var i = 0; i < rows.length; i++) {
+            rows[i].classList.remove("is-drop-before");
+          }
+        }
+
+        function dropIndexForY(clientY, done) {
+          var rows = getGroupRows(done);
+          for (var i = 0; i < rows.length; i++) {
+            var rect = rows[i].getBoundingClientRect();
+            if (clientY < rect.top + rect.height / 2) return i;
+          }
+          return Math.max(0, rows.length - 1);
+        }
+
+        function moveRowToIndex(row, targetIndex) {
+          var done = row.classList.contains("is-done");
+          var rows = getGroupRows(done);
+          var from = rows.indexOf(row);
+          if (from < 0 || targetIndex < 0 || targetIndex >= rows.length) return;
+          if (targetIndex === from) return;
+
+          var ref = rows[targetIndex];
+          if (targetIndex < from) {
+            listEl.insertBefore(row, ref);
+          } else {
+            listEl.insertBefore(row, ref.nextSibling);
+          }
+        }
+
+        function persistOrderFromDom() {
+          if (!activeTopic) return Promise.resolve();
+          var db = initDb();
+          if (!db) return Promise.reject();
+
+          var batch = db.batch();
+          var ts = window.firebase.firestore.FieldValue.serverTimestamp();
+          var groups = [false, true];
+
+          for (var g = 0; g < groups.length; g++) {
+            var rows = getGroupRows(groups[g]);
+            for (var i = 0; i < rows.length; i++) {
+              var id = rows[i].getAttribute("data-id");
+              var order = i * 10;
+              batch.update(db.collection(tasksCollection).doc(id), {
+                sortOrder: order,
+                updatedAt: ts
+              });
+              for (var t = 0; t < tasks.length; t++) {
+                if (tasks[t].id === id) {
+                  tasks[t].sortOrder = order;
+                  break;
+                }
+              }
+            }
+          }
+
+          return batch.commit();
+        }
+
+        function endReorder(e) {
+          if (!reorder) return;
+          var row = reorder.row;
+          row.classList.remove("is-reordering");
+          clearDropMarkers();
+          try {
+            if (row.hasPointerCapture(e.pointerId)) row.releasePointerCapture(e.pointerId);
+          } catch (_) {}
+
+          var moved = reorder.moved;
+          reorder = null;
+
+          if (!moved) return;
+          setStatus(statusTasksEl, "Menyimpan urutan...");
+          persistOrderFromDom()
+            .then(function () {
+              setStatus(statusTasksEl, "Urutan disimpan.");
+            })
+            .catch(function () {
+              setStatus(statusTasksEl, "Gagal menyimpan urutan.", true);
+              loadTasksOnly();
+            });
+        }
+
+        listEl.addEventListener("pointerdown", function (e) {
+          if (!e.target.closest(".task-drag-handle")) return;
+          var row = e.target.closest(".task-row");
+          if (!row) return;
+
+          closeSwipeRow(row);
+          reorder = {
+            row: row,
+            done: row.classList.contains("is-done"),
+            moved: false
+          };
+          row.classList.add("is-reordering");
+          row.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        });
+
+        listEl.addEventListener("pointermove", function (e) {
+          if (!reorder || !reorder.row.hasPointerCapture(e.pointerId)) return;
+
+          var targetIndex = dropIndexForY(e.clientY, reorder.done);
+          var rows = getGroupRows(reorder.done);
+          var from = rows.indexOf(reorder.row);
+          if (from !== targetIndex) {
+            reorder.moved = true;
+            moveRowToIndex(reorder.row, targetIndex);
+          }
+
+          clearDropMarkers();
+          rows = getGroupRows(reorder.done);
+          var hover = rows[targetIndex];
+          if (hover) hover.classList.add("is-drop-before");
+          e.preventDefault();
+        });
+
+        listEl.addEventListener("pointerup", endReorder);
+        listEl.addEventListener("pointercancel", endReorder);
+      }
+
+      initSwipeList(topicListEl);
+      initSwipeList(taskListEl);
+      initTaskReorderList(taskListEl);
+
+      document.addEventListener("click", function (e) {
+        if (e.target.closest(".swipe-row")) return;
+        closeAllSwipeRows(topicListEl);
+        closeAllSwipeRows(taskListEl);
+      });
+
+      topicListEl.addEventListener("click", function (e) {
+        var item = e.target.closest(".swipe-row");
+        if (!item) return;
+
+        if (e.target.classList.contains("topic-edit")) {
+          var topicId = item.getAttribute("data-id");
+          var current = null;
+          for (var t = 0; t < topics.length; t++) {
+            if (topics[t].id === topicId) { current = topics[t]; break; }
+          }
+          if (!current) return;
+          var nextName = window.prompt("Ubah nama topik:", current.name);
+          if (nextName != null) updateTopic(topicId, nextName);
+        }
+
+        if (e.target.classList.contains("topic-delete")) {
+          deleteTopic(item.getAttribute("data-id"), item.getAttribute("data-key"));
+          return;
+        }
+
+        if (item.classList.contains("topic-row")) {
+          var topicKey = item.getAttribute("data-key");
+          for (var ti = 0; ti < topics.length; ti++) {
+            if (topics[ti].key === topicKey) {
+              showTasksView(topics[ti]);
+              return;
+            }
+          }
+        }
+      });
+
+      taskListEl.addEventListener("change", function (e) {
+        if (!e.target.classList.contains("task-check")) return;
+        var item = e.target.closest(".swipe-row");
+        if (!item) return;
+        toggleTask(item.getAttribute("data-id"), e.target.checked);
+      });
+
+      taskListEl.addEventListener("click", function (e) {
+        var item = e.target.closest(".swipe-row");
+        if (!item || !item.classList.contains("task-row")) return;
+
+        if (e.target.classList.contains("task-edit")) {
+          var taskId = item.getAttribute("data-id");
+          var current = null;
+          for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].id === taskId) { current = tasks[i]; break; }
+          }
+          if (!current) return;
+          var nextText = window.prompt("Ubah tugas:", current.text);
+          if (nextText != null) updateTask(taskId, nextText);
+          return;
+        }
+
+        if (e.target.classList.contains("task-delete")) {
+          deleteTask(item.getAttribute("data-id"));
+          return;
+        }
+
+        if (e.target.classList.contains("task-check")) return;
+        if (e.target.closest(".task-drag-handle")) return;
+
+        var checkbox = item.querySelector(".task-check");
+        if (!checkbox) return;
+        closeSwipeRow(item);
+        checkbox.checked = !checkbox.checked;
+        toggleTask(item.getAttribute("data-id"), checkbox.checked);
+      });
+
+      addTopicBtn.addEventListener("click", addTopic);
+      topicInputEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") addTopic();
+      });
+      addTaskBtn.addEventListener("click", addTask);
+      taskInputEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") addTask();
+      });
+      reloadTopicsBtn.addEventListener("click", loadAllTopics);
+      deleteAllTasksBtn.addEventListener("click", deleteAllTasks);
+      backBtn.addEventListener("click", showTopicsView);
+
+      loadAllTopics();
+    })();
+  </script>
+</body>
+</html>
