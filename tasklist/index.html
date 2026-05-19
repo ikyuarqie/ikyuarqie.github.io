@@ -368,14 +368,22 @@
       color: #3a6dad;
     }
     .swipe-row.is-reordering {
-      opacity: 0.88;
-      z-index: 4;
+      opacity: 0.92;
+      z-index: 20;
+      position: relative;
     }
     .swipe-row.is-reordering .swipe-content {
       box-shadow: 0 8px 22px rgba(33, 53, 90, 0.18);
+      transition: none;
+    }
+    .list-scroll.is-drag-scrolling {
+      scroll-behavior: auto;
     }
     .swipe-row.is-drop-before .swipe-content {
       box-shadow: inset 0 3px 0 0 #3a6dad;
+    }
+    .swipe-row.is-drop-after .swipe-content {
+      box-shadow: inset 0 -3px 0 0 #3a6dad;
     }
     .summary {
       margin-top: 10px;
@@ -1199,6 +1207,8 @@
 
       function initTaskReorderList(listEl) {
         var reorder = null;
+        var scrollEl = listEl.closest(".list-scroll");
+        var scrollRaf = 0;
 
         function getTaskRows() {
           return Array.prototype.slice.call(listEl.querySelectorAll(".task-row"));
@@ -1213,32 +1223,97 @@
         function clearDropMarkers() {
           var rows = getTaskRows();
           for (var i = 0; i < rows.length; i++) {
-            rows[i].classList.remove("is-drop-before");
+            rows[i].classList.remove("is-drop-before", "is-drop-after");
           }
         }
 
-        function dropIndexForY(clientY, done) {
+        function dropIndexForY(clientY, done, dragRow) {
           var rows = getGroupRows(done);
           for (var i = 0; i < rows.length; i++) {
+            if (rows[i] === dragRow) continue;
             var rect = rows[i].getBoundingClientRect();
             if (clientY < rect.top + rect.height / 2) return i;
           }
-          return Math.max(0, rows.length - 1);
+          return rows.length;
+        }
+
+        function placeGroupRowsInDom(done, orderedRows) {
+          var allRows = getTaskRows();
+          var anchor = null;
+          if (!done) {
+            for (var i = 0; i < allRows.length; i++) {
+              if (allRows[i].classList.contains("is-done")) {
+                anchor = allRows[i];
+                break;
+              }
+            }
+            for (var j = 0; j < orderedRows.length; j++) {
+              if (anchor) listEl.insertBefore(orderedRows[j], anchor);
+              else listEl.appendChild(orderedRows[j]);
+            }
+          } else {
+            for (var k = 0; k < orderedRows.length; k++) {
+              listEl.appendChild(orderedRows[k]);
+            }
+          }
         }
 
         function moveRowToIndex(row, targetIndex) {
           var done = row.classList.contains("is-done");
           var rows = getGroupRows(done);
           var from = rows.indexOf(row);
-          if (from < 0 || targetIndex < 0 || targetIndex >= rows.length) return;
-          if (targetIndex === from) return;
+          if (from < 0) return;
 
-          var ref = rows[targetIndex];
-          if (targetIndex < from) {
-            listEl.insertBefore(row, ref);
-          } else {
-            listEl.insertBefore(row, ref.nextSibling);
+          var insertAt = targetIndex;
+          if (insertAt > rows.length) insertAt = rows.length;
+          if (from < insertAt && insertAt < rows.length) insertAt -= 1;
+          if (insertAt === from) return;
+
+          rows.splice(from, 1);
+          rows.splice(insertAt, 0, row);
+          placeGroupRowsInDom(done, rows);
+        }
+
+        function syncTasksOrderFromDom() {
+          if (!activeTopic) return;
+          var openRows = getGroupRows(false);
+          var doneRows = getGroupRows(true);
+          var orderedIds = [];
+          var oi;
+          for (oi = 0; oi < openRows.length; oi++) orderedIds.push(openRows[oi].getAttribute("data-id"));
+          for (oi = 0; oi < doneRows.length; oi++) orderedIds.push(doneRows[oi].getAttribute("data-id"));
+
+          var byId = {};
+          for (var t = 0; t < tasks.length; t++) {
+            if (tasks[t].topic === activeTopic.key) byId[tasks[t].id] = tasks[t];
           }
+          for (var i = 0; i < orderedIds.length; i++) {
+            if (byId[orderedIds[i]]) byId[orderedIds[i]].sortOrder = i * 10;
+          }
+        }
+
+        function autoScrollList(clientY) {
+          if (!scrollEl) return;
+          var rect = scrollEl.getBoundingClientRect();
+          var edge = 64;
+          var step = 18;
+          if (clientY < rect.top + edge) {
+            scrollEl.scrollTop -= step;
+          } else if (clientY > rect.bottom - edge) {
+            scrollEl.scrollTop += step;
+          }
+        }
+
+        function tickAutoScroll() {
+          if (!reorder) return;
+          autoScrollList(reorder.clientY);
+          scrollRaf = window.requestAnimationFrame(tickAutoScroll);
+        }
+
+        function stopAutoScroll() {
+          if (scrollRaf) window.cancelAnimationFrame(scrollRaf);
+          scrollRaf = 0;
+          if (scrollEl) scrollEl.classList.remove("is-drag-scrolling");
         }
 
         function persistOrderFromDom() {
@@ -1249,12 +1324,13 @@
           var batch = db.batch();
           var ts = window.firebase.firestore.FieldValue.serverTimestamp();
           var groups = [false, true];
+          var baseOrder = 0;
 
           for (var g = 0; g < groups.length; g++) {
             var rows = getGroupRows(groups[g]);
             for (var i = 0; i < rows.length; i++) {
               var id = rows[i].getAttribute("data-id");
-              var order = i * 10;
+              var order = baseOrder + i * 10;
               batch.update(db.collection(tasksCollection).doc(id), {
                 sortOrder: order,
                 updatedAt: ts
@@ -1266,71 +1342,103 @@
                 }
               }
             }
+            baseOrder += rows.length * 10;
           }
 
           return batch.commit();
         }
 
-        function endReorder(e) {
-          if (!reorder) return;
+        function detachDragListeners() {
+          document.removeEventListener("pointermove", onDocPointerMove);
+          document.removeEventListener("pointerup", onDocPointerUp);
+          document.removeEventListener("pointercancel", onDocPointerUp);
+          stopAutoScroll();
+        }
+
+        function updateDropMarkers(targetIndex, dragRow) {
+          clearDropMarkers();
+          var rows = getGroupRows(dragRow.classList.contains("is-done"));
+          if (targetIndex < rows.length && rows[targetIndex] !== dragRow) {
+            rows[targetIndex].classList.add("is-drop-before");
+          } else if (rows.length) {
+            var last = rows[rows.length - 1];
+            if (last !== dragRow) last.classList.add("is-drop-after");
+            else if (rows.length > 1) rows[rows.length - 2].classList.add("is-drop-after");
+          }
+        }
+
+        function onDocPointerMove(e) {
+          if (!reorder || e.pointerId !== reorder.pointerId) return;
+
+          reorder.clientY = e.clientY;
+          var targetIndex = dropIndexForY(e.clientY, reorder.done, reorder.row);
+          if (targetIndex !== reorder.lastTo) {
+            reorder.moved = true;
+            reorder.lastTo = targetIndex;
+            moveRowToIndex(reorder.row, targetIndex);
+          }
+          updateDropMarkers(targetIndex, reorder.row);
+          e.preventDefault();
+        }
+
+        function onDocPointerUp(e) {
+          if (!reorder || e.pointerId !== reorder.pointerId) return;
+
           var row = reorder.row;
+          var moved = reorder.moved;
           row.classList.remove("is-reordering");
           clearDropMarkers();
+          detachDragListeners();
           try {
             if (row.hasPointerCapture(e.pointerId)) row.releasePointerCapture(e.pointerId);
           } catch (_) {}
-
-          var moved = reorder.moved;
           reorder = null;
 
           if (!moved) return;
+
+          syncTasksOrderFromDom();
           setStatus(statusTasksEl, "Menyimpan urutan...");
           persistOrderFromDom()
             .then(function () {
               setStatus(statusTasksEl, "Urutan disimpan.");
             })
-            .catch(function () {
-              setStatus(statusTasksEl, "Gagal menyimpan urutan.", true);
-              loadTasksOnly();
+            .catch(function (err) {
+              var code = err && err.code ? String(err.code) : "";
+              if (code === "permission-denied") {
+                setStatus(statusTasksEl, "Urutan ditolak Rules — publish firestore.rules.", true);
+              } else {
+                setStatus(statusTasksEl, "Gagal menyimpan urutan.", true);
+              }
             });
         }
 
         listEl.addEventListener("pointerdown", function (e) {
+          if (e.button !== 0) return;
           if (!e.target.closest(".task-drag-handle")) return;
           var row = e.target.closest(".task-row");
           if (!row) return;
+
+          e.preventDefault();
+          e.stopPropagation();
 
           closeSwipeRow(row);
           reorder = {
             row: row,
             done: row.classList.contains("is-done"),
-            moved: false
+            moved: false,
+            lastTo: -1,
+            pointerId: e.pointerId,
+            clientY: e.clientY
           };
           row.classList.add("is-reordering");
+          if (scrollEl) scrollEl.classList.add("is-drag-scrolling");
           row.setPointerCapture(e.pointerId);
-          e.preventDefault();
+
+          document.addEventListener("pointermove", onDocPointerMove);
+          document.addEventListener("pointerup", onDocPointerUp);
+          document.addEventListener("pointercancel", onDocPointerUp);
+          scrollRaf = window.requestAnimationFrame(tickAutoScroll);
         });
-
-        listEl.addEventListener("pointermove", function (e) {
-          if (!reorder || !reorder.row.hasPointerCapture(e.pointerId)) return;
-
-          var targetIndex = dropIndexForY(e.clientY, reorder.done);
-          var rows = getGroupRows(reorder.done);
-          var from = rows.indexOf(reorder.row);
-          if (from !== targetIndex) {
-            reorder.moved = true;
-            moveRowToIndex(reorder.row, targetIndex);
-          }
-
-          clearDropMarkers();
-          rows = getGroupRows(reorder.done);
-          var hover = rows[targetIndex];
-          if (hover) hover.classList.add("is-drop-before");
-          e.preventDefault();
-        });
-
-        listEl.addEventListener("pointerup", endReorder);
-        listEl.addEventListener("pointercancel", endReorder);
       }
 
       initSwipeList(topicListEl);

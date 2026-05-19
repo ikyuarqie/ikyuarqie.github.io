@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Wedding RSVP (create only from invitation)
+    match /rsvps/{docId} {
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'name',
+          'attendance',
+          'createdAt',
+          'createdAtClient',
+          'userAgent',
+          'pic'
+        ]) &&
+        request.resource.data.keys().hasAll([
+          'name',
+          'attendance',
+          'createdAt',
+          'createdAtClient',
+          'userAgent'
+        ]) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() <= 120 &&
+        request.resource.data.attendance in ['yes', 'no'] &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.createdAtClient is string &&
+        request.resource.data.createdAtClient.size() > 0 &&
+        request.resource.data.userAgent is string &&
+        (
+          !('pic' in request.resource.data) ||
+          (
+            request.resource.data.pic is string &&
+            request.resource.data.pic.size() <= 60
+          )
+        );
+
+      allow read: if true;
+      allow update, delete: if false;
+    }
+
+    // Task list — topics
+    match /task_topics/{docId} {
+      allow read: if true;
+      allow create: if
+        request.resource.data.keys().hasAll(['name', 'key', 'createdAt']) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() <= 60 &&
+        request.resource.data.key is string &&
+        request.resource.data.key.size() > 0 &&
+        request.resource.data.key.size() <= 80 &&
+        request.resource.data.createdAt == request.time;
+      allow update: if
+        request.resource.data.keys().hasAll(['name', 'key']) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() <= 60 &&
+        request.resource.data.key is string &&
+        request.resource.data.key.size() > 0 &&
+        request.resource.data.key.size() <= 80;
+      allow delete: if true;
+    }
+
+    // Task list — tasks (includes sortOrder for drag reorder)
+    match /tasks/{docId} {
+      allow read: if true;
+
+      allow create: if taskDataValid(request.resource.data) &&
+        request.resource.data.createdAt == request.time;
+
+      allow update: if taskDataValid(request.resource.data);
+
+      allow delete: if true;
+    }
+  }
+
+  function taskDataValid(data) {
+    return data.keys().hasAll(['topic', 'text', 'done', 'createdAt', 'updatedAt']) &&
+      data.topic is string &&
+      data.topic.size() > 0 &&
+      data.topic.size() <= 80 &&
+      data.text is string &&
+      data.text.size() > 0 &&
+      data.text.size() <= 200 &&
+      data.done is bool &&
+      (
+        !('sortOrder' in data) ||
+        (data.sortOrder is int || data.sortOrder is float)
+      );
+  }
+}
